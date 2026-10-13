@@ -27,17 +27,19 @@ enum Role {
 
 // User table
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique @db.VarChar(52)
-  name      String?
-  password  String
-  status    Status   @default(ACTIVE)
-  role      Role     @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  email           String   @unique @db.VarChar(52)
+  name            String?
+  password        String
+  status          Status   @default(ACTIVE)
+  role            Role     @default(CUSTOMER)
+  loginErrorCount Int      @default(0)
+  refreshToken    String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   //relations
-  address   Address?
-  orders Order[]
+  address         Address?
+  orders          Order[]
 }
 
 // Address table
@@ -46,50 +48,82 @@ model Address {
   name       String
   phone      String   @db.VarChar(15)
   postalCode String   @db.VarChar(8)
-  address String @db.VarChar(255)
+  address    String   @db.VarChar(255)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  userId     Int      @unique  //one to one relationship to user
+  userId     Int      @unique //one to one relationship to user
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 // Product table
 model Product {
-  id         Int      @id @default(autoincrement())
-  name String @db.VarChar(52)
-  description String @db.VarChar(255)
-  price Decimal @db.Decimal(10,2)
-  discount Decimal @default(0) @db.Decimal(10,2)
-  stock Int @default(0)
-  rating Int @default(0) @db.SmallInt
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  orders ProductOnOrder[]
+  id          Int              @id @default(autoincrement())
+  name        String           @db.VarChar(52)
+  description String           @db.VarChar(255)
+  price       Decimal          @db.Decimal(10, 2)
+  discount    Decimal          @default(0) @db.Decimal(10, 2)
+  stock       Int              @default(0)
+  rating      Int              @default(0) @db.SmallInt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  orders      ProductOnOrder[]
+  images      Image[]
+  // one to many from category
+  categoryId  Int
+  category    Category         @relation(fields: [categoryId], references: [id])
 }
 
 // Order table
 model Order {
-  id         Int      @id @default(autoincrement())
-  code  String @db.VarChar(7)
-  totalPrice Decimal @default(0) @db.Decimal(10,2)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  userId Int //one to many relation with user
-  user User @relation(fields: [userId], references: [id])
-  products ProductOnOrder[]
+  id         Int              @id @default(autoincrement())
+  code       String           @db.VarChar(7)
+  totalPrice Decimal          @default(0) @db.Decimal(10, 2)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  userId     Int //one to many relation with user
+  user       User             @relation(fields: [userId], references: [id])
+  products   ProductOnOrder[]
 }
 
 // ProductOnOrder table
 model ProductOnOrder {
-  id         Int      @id @default(autoincrement())
-  quantity Int @db.SmallInt
-  price Decimal @default(0) @db.Decimal(10,2)
+  id        Int     @id @default(autoincrement())
+  quantity  Int     @db.SmallInt
+  price     Decimal @default(0) @db.Decimal(10, 2)
   // self table for order and product (many to many)
-  orderId Int 
-  order Order @relation(fields: [orderId], references: [id])
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
   productId Int
-  product Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
 
+// Image table
+model Image {
+  id        Int     @id @default(autoincrement())
+  urlPath   String  @db.VarChar(255)
+  // one to many from product
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
 
+// Category table
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
 
-
+// OTP table
+model Otp {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique @db.VarChar(52)
+  otp            String
+  rememberToken  String
+  verifyToken    String?
+  requestedCount Int      @default(0) @db.SmallInt
+  errorCount     Int      @default(0) @db.SmallInt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
