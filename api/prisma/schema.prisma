@@ -12,18 +12,64 @@ datasource db {
   provider = "postgresql"
 }
 
+// Enums
+enum Status {
+  ACTIVE
+  FREEZE
+}
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  posts Post[]
-} 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  author    User    @relation(fields: [authorId], references: [id]) 
-  authorId  Int
-} 
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+// Models is started from here______________Models is started from here
+
+// User table
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique @db.VarChar(52)
+  name      String?
+  password  String
+  status    Status   @default(ACTIVE)
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  //relations
+  address   Address?
+  orders Order[]
+}
+
+// Address table
+model Address {
+  id         Int      @id @default(autoincrement())
+  name       String
+  phone      String   @db.VarChar(15)
+  postalCode String   @db.VarChar(8)
+  address String @db.VarChar(255)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     Int      @unique  //one to one relationship to user
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+// Product table
+model Product {
+  id         Int      @id @default(autoincrement())
+  name String @db.VarChar(52)
+  description String @db.VarChar(255)
+  price Decimal @db.Decimal(10,2)
+  discount Decimal @default(0) @db.Decimal(10,2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Order table
+model Order {
+  id         Int      @id @default(autoincrement())
+  code  String @db.VarChar(7)
+  totalPrice Decimal @default(0) @db.Decimal(10,2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId Int //one to many relation with user
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
