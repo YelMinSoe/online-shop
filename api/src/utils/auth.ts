@@ -6,6 +6,13 @@ export const checkUserExist = (user: any) => {
   }
 };
 
+// Check otp row
+export const checkOtpRowExist = (otpRow: any) => {
+  if (!otpRow) {
+    errorResponse(404, "OTP not found.");
+  }
+};
+
 export const checkRequestCountIfSameDate = (
   isSameDate: boolean,
   requestedCount: number,

@@ -1,5 +1,6 @@
 // Package imports
 import bcrypt from "bcrypt";
+import moment from "moment";
 
 // Local imports
 import {
@@ -10,10 +11,15 @@ import {
 } from "../repos/authRepo.ts";
 import { otpGenerator, tokenGenerator } from "../utils/generate.ts";
 import { sendEmail } from "../utils/sendEmail.ts";
-import { checkRequestCountIfSameDate, checkUserExist } from "../utils/auth.ts";
+import {
+  checkOtpRowExist,
+  checkRequestCountIfSameDate,
+  checkUserExist,
+} from "../utils/auth.ts";
 import { errorResponse } from "../utils/errorResponse.ts";
 
 export const authServices = {
+  // Register Service / request otp
   register: async (email: string) => {
     // otp is here
     const otp = otpGenerator();
@@ -47,8 +53,57 @@ export const authServices = {
       });
     }
     // Sending Email is here
-    await sendEmail({ to: email, viewFileName: "email", otp });
+    // await sendEmail({ to: email, viewFileName: "email", otp });
 
-    return { rememberToken };
+    // Return values are here
+    return { rememberToken, otp };
+  },
+  /* Veriry OTP is started from here */
+  verifyOtp: async (email: string, otp: string, token: string) => {
+    // user is here and check user existing
+    const user = await getUserByEmail(email);
+    checkUserExist(user);
+
+    // Check otp record exist or not
+    const otpRow = await getOtpRowByEmail(email);
+    checkOtpRowExist(otpRow);
+
+    // Check is it same date?
+    const isSameDate =
+      new Date(otpRow!.updatedAt).toLocaleDateString() ===
+      new Date().toLocaleDateString();
+
+    //   if it 5 times errors in the same day, throw error
+    if (otpRow!.errorCount === 5 && isSameDate) {
+      errorResponse(
+        401,
+        "You have reached the maximum number of OTP attempts.Please try again later.",
+      );
+    }
+
+    // Check remember token that's got from otp request and token from request body (for security)
+    if (otpRow?.rememberToken !== token) {
+      await updateOtp(otpRow!.id, { errorCount: 5 });
+      errorResponse(401, "This is attacked request.");
+    }
+
+    // Check otp is expired or not
+    const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 5;
+    if (isExpired) {
+      errorResponse(401, "OTP is expired");
+    }
+    // Compare otp
+    const isMatched = await bcrypt.compare(otp, otpRow!.otp);
+    // when password is wrong, check in the same day?
+    if (!isMatched) {
+      await updateOtp(otpRow!.id, {
+        errorCount: isSameDate ? { increment: 1 } : 1,
+      });
+      errorResponse(401, "Wrong OTP.Please try again");
+    }
+    const verifyToken = tokenGenerator();
+    await updateOtp(otpRow!.id, { verifyToken, errorCount: 0 });
+    // Return values
+    return { verifyToken };
   },
 };

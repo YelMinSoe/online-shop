@@ -20,19 +20,31 @@ export const authControllers = {
       }
       const { email } = req.body;
       // Calling auth Service with return value of rememberToken and otp
-      const { rememberToken } = await authServices.register(email);
+      const { rememberToken, otp } = await authServices.register(email);
 
       return res.status(200).json({
         message: "We sent OTP to your email.Please check it.",
         rememberToken,
+        otp,
       });
     },
   ],
 
   // Verify Otp is started from here
-  verifyOtp: (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({ message: "This is verify otp" });
-  },
+  verifyOtp: [
+    authValidator.verifyOtp,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { email, otp, token } = req.body;
+      const { verifyToken } = await authServices.verifyOtp(email, otp, token);
+      res
+        .status(200)
+        .json({ message: "OTP verified successfully.", verifyToken });
+    },
+  ],
   // Confirm Password is started from here
   confirmPassword: (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({ message: "This is confirm password" });
