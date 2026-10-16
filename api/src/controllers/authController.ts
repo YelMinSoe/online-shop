@@ -8,6 +8,7 @@ import { errorResponse } from "../utils/errorResponse.ts";
 import { otpGenerator } from "../utils/generate.ts";
 import { sendEmail } from "../utils/sendEmail.ts";
 import { authServices } from "../services/authService.ts";
+import { setCookie } from "../utils/setCookie.ts";
 
 export const authControllers = {
   // Register is started from here
@@ -46,9 +47,27 @@ export const authControllers = {
     },
   ],
   // Confirm Password is started from here
-  confirmPassword: (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({ message: "This is confirm password" });
-  },
+  confirmPassword: [
+    authValidator.confirmPassword,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { email, password, token } = req.body;
+      const { id, accessToken, refreshToken } =
+        await authServices.confrimPassword(email, password, token);
+      res
+        .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
+        .cookie(
+          "refreshToken",
+          refreshToken,
+          setCookie(30 * 24 * 60 * 60 * 1000),
+        )
+        .status(201)
+        .json({ message: "User created successfully", id });
+    },
+  ],
   //Login is started from here
   login: (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({ message: "This is login" });

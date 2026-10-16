@@ -5,9 +5,11 @@ import moment from "moment";
 // Local imports
 import {
   createOtp,
+  createUser,
   getOtpRowByEmail,
   getUserByEmail,
   updateOtp,
+  updateUser,
 } from "../repos/authRepo.ts";
 import { otpGenerator, tokenGenerator } from "../utils/generate.ts";
 import { sendEmail } from "../utils/sendEmail.ts";
@@ -17,9 +19,10 @@ import {
   checkUserExist,
 } from "../utils/auth.ts";
 import { errorResponse } from "../utils/errorResponse.ts";
+import { accessToken, newRefreshToken } from "../utils/createToken.ts";
 
 export const authServices = {
-  // Register Service / request otp
+  // Register Service / request otp is started from here
   register: async (email: string) => {
     // otp is here
     const otp = otpGenerator();
@@ -34,6 +37,7 @@ export const authServices = {
     const hashedOtp = await bcrypt.hash(otp.toString(), salt);
     // OTP Data
     const otpData = { email, otp: hashedOtp, rememberToken };
+
     // check otp row (otp record)
     const otpRow = await getOtpRowByEmail(email);
     if (!otpRow) {
@@ -41,24 +45,29 @@ export const authServices = {
     } else {
       //check last request and today
       const isSameDate =
-        new Date(otpRow.updatedAt).toLocaleDateString() ===
+        new Date(otpRow!.updatedAt).toLocaleDateString() ===
         new Date().toLocaleDateString();
 
       //   check request count and if request count are reached 3 times, it will throw error.
-      checkRequestCountIfSameDate(isSameDate, otpRow.requestedCount);
+      checkRequestCountIfSameDate(isSameDate, otpRow!.requestedCount);
+
       // updating OTP row (otp record), if it have already been had
-      await updateOtp(otpRow.id, {
+      await updateOtp(otpRow!.id, {
         ...otpData,
-        requestedCount: { increment: 1 },
+        errorCount: 0,
+        requestedCount: isSameDate ? { increment: 1 } : 1,
       });
     }
+
     // Sending Email is here
     // await sendEmail({ to: email, viewFileName: "email", otp });
 
     // Return values are here
     return { rememberToken, otp };
   },
-  /* Veriry OTP is started from here */
+  /* 
+  Veriry OTP is started from here
+   */
   verifyOtp: async (email: string, otp: string, token: string) => {
     // user is here and check user existing
     const user = await getUserByEmail(email);
@@ -80,7 +89,6 @@ export const authServices = {
         "You have reached the maximum number of OTP attempts.Please try again later.",
       );
     }
-
     // Check remember token that's got from otp request and token from request body (for security)
     if (otpRow?.rememberToken !== token) {
       await updateOtp(otpRow!.id, { errorCount: 5 });
@@ -105,5 +113,56 @@ export const authServices = {
     await updateOtp(otpRow!.id, { verifyToken, errorCount: 0 });
     // Return values
     return { verifyToken };
+  },
+  /* 
+  Veriry OTP is started from here 
+  */
+  confrimPassword: async (email: string, password: string, token: string) => {
+    // user is here and check user existing
+    const user = await getUserByEmail(email);
+    checkUserExist(user);
+
+    // Check otp record exist or not
+    const otpRow = await getOtpRowByEmail(email);
+    checkOtpRowExist(otpRow);
+
+    if (otpRow?.errorCount === 5) {
+      errorResponse(
+        401,
+        "You have reached the maximum number of OTP attempts.Please try again later.",
+      );
+    }
+
+    // check verify token that's got from verify and token from request body (for security)
+    if (otpRow?.verifyToken !== token) {
+      await updateOtp(otpRow!.id, { errorCount: 5 });
+      errorResponse(401, "This is attacked request.");
+    }
+
+    // Check it is  expired
+    const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 10;
+    if (isExpired) {
+      errorResponse(401, "This service is expired. Please try again.");
+    }
+    // Hashing password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const refreshToken = "I will replace with jwt refresh token";
+
+    // Create user
+    const newUser = await createUser({
+      email,
+      password: hashedPassword,
+      refreshToken,
+    });
+
+    // JWT tokens
+    const access = accessToken(newUser.id);
+    const refresh = newRefreshToken(newUser.id, newUser.email);
+
+    // Update user
+    await updateUser(newUser.id, { refreshToken: refresh });
+
+    return { id: newUser.id, accessToken: access, refreshToken: refresh };
   },
 };

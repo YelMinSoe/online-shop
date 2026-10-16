@@ -25,3 +25,18 @@ export const getUserByEmail = async (email: string) => {
 export const getOtpRowByEmail = async (email: string) => {
   return prisma.otp.findUnique({ where: { email } });
 };
+
+// Create user
+export const createUser = async (userData: any) => {
+  return prisma.user.create({
+    data: userData,
+  });
+};
+
+// Update user
+export const updateUser = async (id: number, userData: any) => {
+  return prisma.user.update({
+    where: { id },
+    data: userData,
+  });
+};
