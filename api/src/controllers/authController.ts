@@ -69,7 +69,30 @@ export const authControllers = {
     },
   ],
   //Login is started from here
-  login: (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({ message: "This is login" });
-  },
+  login: [
+    authValidator.login,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+
+      const { email, password } = req.body;
+
+      const { id, accessToken, refreshToken } = await authServices.login(
+        email,
+        password,
+      );
+
+      res
+        .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
+        .cookie(
+          "refreshToken",
+          refreshToken,
+          setCookie(30 * 24 * 60 * 60 * 1000),
+        )
+        .status(200)
+        .json({ message: "Logged in successfully", id });
+    },
+  ],
 };

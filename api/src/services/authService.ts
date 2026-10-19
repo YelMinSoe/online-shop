@@ -115,7 +115,7 @@ export const authServices = {
     return { verifyToken };
   },
   /* 
-  Veriry OTP is started from here 
+  Confirm password is started from here 
   */
   confrimPassword: async (email: string, password: string, token: string) => {
     // user is here and check user existing
@@ -164,5 +164,46 @@ export const authServices = {
     await updateUser(newUser.id, { refreshToken: refresh });
 
     return { id: newUser.id, accessToken: access, refreshToken: refresh };
+  },
+  /* 
+  Login is started from here 
+  */
+  login: async (email: string, password: string) => {
+    // Check user existing
+    const user = await getUserByEmail(email);
+    if (!user) errorResponse(404, "User not Found");
+
+    // Check user's status freeze or not
+    if (user?.status === "FREEZE") {
+      errorResponse(
+        401,
+        "Your account has been frozen. Please contact support.",
+      );
+    }
+
+    const isMatched = await bcrypt.compare(password, user!.password);
+    const isSameDate =
+      new Date(user!.updatedAt).toLocaleDateString() ===
+      new Date().toLocaleDateString();
+    if (!isMatched) {
+      if (isSameDate && user!.loginErrorCount >= 3) {
+        await updateUser(user!.id, { status: "FREEZE" });
+        errorResponse(
+          401,
+          "Your account has been frozen due to multiple failed login attempts. Please contact support.",
+        );
+      }
+      await updateUser(user!.id, {
+        loginErrorCount: isSameDate ? { increment: 1 } : 1,
+      });
+      errorResponse(401, "Invalid password. Please try again.");
+    }
+
+    const access = accessToken(user!.id);
+    const refresh = newRefreshToken(user!.id, user!.email);
+
+    await updateUser(user!.id, { refreshToken: refresh });
+
+    return { id: user?.id, accessToken: access, refreshToken: refresh };
   },
 };

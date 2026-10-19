@@ -47,11 +47,31 @@ export const authValidator = {
       .notEmpty()
       .withMessage("Password is required")
       .isLength({ min: 8, max: 8 })
-      .withMessage("Password must be exactly 8 digits long."),
+      .withMessage("Password must be exactly 8 digits long.")
+      .matches("^[0-9]+$")
+      .withMessage("Password must contain only numbers."),
     body("token", "Invalid verify token and please try again.")
       .trim()
       .notEmpty()
       .withMessage("Verify token is required.")
       .escape(),
+  ],
+  login: [
+    body("email", "Invalid email and please try again.")
+      .trim()
+      .notEmpty()
+      .withMessage("Email is required.")
+      .isEmail()
+      .withMessage("Invalid email format.")
+      .isLength({ max: 52 })
+      .withMessage("Invalid or too long email."),
+    body("password", "Invalid password and please try again.")
+      .trim()
+      .notEmpty()
+      .withMessage("Password is required")
+      .isLength({ min: 8, max: 8 })
+      .withMessage("Password must be exactly 8 digits long.")
+      .matches("^[0-9]+$")
+      .withMessage("Password must contain only numbers."),
   ],
 };
