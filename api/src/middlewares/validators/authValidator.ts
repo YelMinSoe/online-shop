@@ -74,4 +74,14 @@ export const authValidator = {
       .matches("^[0-9]+$")
       .withMessage("Password must contain only numbers."),
   ],
+  forgetPassword: [
+    body("email", "Invalid email and please try again.")
+      .trim()
+      .notEmpty()
+      .withMessage("Email is required.")
+      .isEmail()
+      .withMessage("Invalid email format.")
+      .isLength({ max: 52 })
+      .withMessage("Invalid or too long email."),
+  ],
 };

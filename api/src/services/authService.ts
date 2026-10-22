@@ -202,8 +202,29 @@ export const authServices = {
     const access = accessToken(user!.id);
     const refresh = newRefreshToken(user!.id, user!.email);
 
-    await updateUser(user!.id, { refreshToken: refresh });
+    await updateUser(user!.id, { refreshToken: refresh, loginErrorCount: 0 });
 
     return { id: user?.id, accessToken: access, refreshToken: refresh };
+  },
+  /* 
+  Forget password is started from here 
+  */
+  forgetPassword: async (email: string) => {
+    const user = await getUserByEmail(email);
+    const OtpRow = await getOtpRowByEmail(email);
+
+    if (!user || email !== OtpRow?.email) {
+      errorResponse(401, "This email has not been registered");
+    }
+
+    const otp = otpGenerator();
+    const rememberToken = tokenGenerator();
+
+    const salt = await bcrypt.genSalt(10);
+    const hashOtp = await bcrypt.hash(otp.toString(), salt);
+
+    await updateOtp(OtpRow!.id, { otp: hashOtp, rememberToken });
+
+    return { otp, rememberToken };
   },
 };

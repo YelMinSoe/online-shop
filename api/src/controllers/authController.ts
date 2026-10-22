@@ -95,4 +95,17 @@ export const authControllers = {
         .json({ message: "Logged in successfully", id });
     },
   ],
+  //Forget Password is started from here
+  forgetPassword: [
+    authValidator.forgetPassword,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { email } = req.body;
+      const { otp, rememberToken } = await authServices.forgetPassword(email);
+      res.status(200).json({ otp, rememberToken });
+    },
+  ],
 };

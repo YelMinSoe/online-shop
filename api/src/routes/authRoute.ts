@@ -10,5 +10,6 @@ router.post("/register", ...authControllers.register);
 router.post("/verify-otp", ...authControllers.verifyOtp);
 router.post("/confirm-password", ...authControllers.confirmPassword);
 router.post("/login", ...authControllers.login);
+router.post("/forget-password", ...authControllers.forgetPassword);
 
 export default router;
