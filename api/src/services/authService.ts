@@ -8,6 +8,7 @@ import {
   createUser,
   getOtpRowByEmail,
   getUserByEmail,
+  getUserById,
   updateOtp,
   updateUser,
 } from "../repos/authRepo.ts";
@@ -20,6 +21,7 @@ import {
 } from "../utils/auth.ts";
 import { errorResponse } from "../utils/errorResponse.ts";
 import { accessToken, newRefreshToken } from "../utils/createToken.ts";
+import jwt from "jsonwebtoken";
 
 export const authServices = {
   // Register Service / request otp is started from here
@@ -207,14 +209,68 @@ export const authServices = {
     return { id: user?.id, accessToken: access, refreshToken: refresh };
   },
   /* 
+  Login is started from here 
+  */
+  logout: async (refreshToken: string) => {
+    // Check refresh token
+    if (!refreshToken) {
+      errorResponse(400, "You are not unauthenticated user");
+    }
+    // Verify refresh token
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as {
+        id: number;
+        email: string;
+      };
+    } catch (error) {
+      errorResponse(400, "You are not unauthenticated user");
+    }
+    // Check id is number or not {this is option for security}
+    if (isNaN(decoded!.id)) {
+      errorResponse(400, "You are not unauthenticated user");
+    }
+
+    // Check user exist or not
+    const user = await getUserById(decoded!.id);
+    if (!user) {
+      errorResponse(401, "This email has not been registered.");
+    }
+
+    // Check refresh token is same or not
+    if (user?.email !== decoded!.email) {
+      errorResponse(401, "This email has not been registered.");
+    }
+
+    // Update user table with refresh token rotation
+    await updateUser(user!.id, { refreshToken: tokenGenerator() });
+  },
+  /* 
   Forget password is started from here 
   */
   forgetPassword: async (email: string) => {
     const user = await getUserByEmail(email);
-    const OtpRow = await getOtpRowByEmail(email);
+    const otpRow = await getOtpRowByEmail(email);
 
-    if (!user || email !== OtpRow?.email) {
+    if (!user || email !== otpRow?.email) {
       errorResponse(401, "This email has not been registered");
+    }
+
+    // check last request and today
+    const isSameDate =
+      new Date(otpRow!.updatedAt).toLocaleDateString() ===
+      new Date().toLocaleDateString();
+
+    if (otpRow?.requestedCount === 5) {
+      errorResponse(
+        401,
+        "You have reached the maximum number of OTP requests for today. Please try again tomorrow.",
+      );
+    }
+    if (otpRow!.requestedCount < 5) {
+      await updateOtp(otpRow!.id, {
+        requestedCount: isSameDate ? { increment: 1 } : 1,
+      });
     }
 
     const otp = otpGenerator();
@@ -223,8 +279,105 @@ export const authServices = {
     const salt = await bcrypt.genSalt(10);
     const hashOtp = await bcrypt.hash(otp.toString(), salt);
 
-    await updateOtp(OtpRow!.id, { otp: hashOtp, rememberToken });
+    await updateOtp(otpRow!.id, { otp: hashOtp, rememberToken });
+
+    // Sending Email is here
+    // await sendEmail({ to: email, viewFileName: "email", otp });
 
     return { otp, rememberToken };
+  },
+
+  /* 
+  Verify otp for forget password is started from here 
+  */
+  verifyOtpForForgetPassword: async (
+    email: string,
+    otp: string,
+    token: string,
+  ) => {
+    const user = await getUserByEmail(email);
+    const otpRow = await getOtpRowByEmail(email);
+    if (!user || email !== otpRow?.email) {
+      errorResponse(401, "This email has not been registered");
+    }
+
+    if (otpRow?.errorCount === 5) {
+      errorResponse(
+        401,
+        "You have reached the maximum number of OTP attempts.Please try again later.",
+      );
+    }
+    if (otpRow!.rememberToken !== token) {
+      await updateOtp(otpRow!.id, { errorCount: 5 });
+      errorResponse(
+        401,
+        "You have reached the maximum number of OTP attempts.Please try again later.",
+      );
+    }
+    // check last request and today
+    const isSameDate =
+      new Date(otpRow!.updatedAt).toLocaleDateString() ===
+      new Date().toLocaleDateString();
+
+    if (otpRow!.errorCount > 5) {
+      await updateOtp(otpRow!.id, {
+        errorCount: isSameDate ? { increment: 1 } : 1,
+      });
+    }
+
+    const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 5;
+    if (isExpired) {
+      errorResponse(401, "OTP is expired");
+    }
+
+    const isMatched = await bcrypt.compare(otp, otpRow!.otp);
+    if (!isMatched) {
+      await updateOtp(otpRow!.id, {
+        errorCount: isSameDate ? { increment: 1 } : 1,
+      });
+      errorResponse(401, "Wrong OTP.Please try again");
+    }
+
+    const verifyToken = tokenGenerator();
+    await updateOtp(otpRow!.id, { verifyToken, errorCount: 0 });
+
+    return { verifyToken };
+  },
+  resetPassword: async (email: string, password: string, token: string) => {
+    const user = await getUserByEmail(email);
+    const otpRow = await getOtpRowByEmail(email);
+
+    if (!user || email !== otpRow?.email) {
+      errorResponse(401, "This email has not been registered");
+    }
+
+    if (otpRow?.verifyToken !== token) {
+      errorResponse(401, "This is attacked request.");
+    }
+    if (otpRow?.errorCount === 5) {
+      errorResponse(
+        401,
+        "You have reached the maximum number of OTP attempts.Please try again later.",
+      );
+    }
+
+    const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 10;
+    if (isExpired) {
+      errorResponse(401, "This service is expired. Please try again.");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // JWT tokens
+    const access = accessToken(user!.id);
+    const refresh = newRefreshToken(user!.id, user!.email);
+
+    await updateUser(user!.id, {
+      password: hashedPassword,
+      refreshToken: refresh,
+    });
+
+    return { id: user!.id, accessToken: access, refreshToken: refresh };
   },
 };

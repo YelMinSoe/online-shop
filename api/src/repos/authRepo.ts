@@ -20,6 +20,12 @@ export const getUserByEmail = async (email: string) => {
     where: { email },
   });
 };
+//  Get user by ID
+export const getUserById = async (id: number) => {
+  return prisma.user.findUnique({
+    where: { id },
+  });
+};
 
 //  Get Otp row by email
 export const getOtpRowByEmail = async (email: string) => {

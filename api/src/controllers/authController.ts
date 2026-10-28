@@ -95,6 +95,14 @@ export const authControllers = {
         .json({ message: "Logged in successfully", id });
     },
   ],
+  //Logout is started from here
+  logout: async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies ? req.cookies.refresh : null;
+    await authServices.logout(refreshToken);
+    res.clearCookie("accessToken", setCookie(15 * 60 * 1000));
+    res.clearCookie("refreshToken", setCookie(30 * 24 * 60 * 60 * 1000));
+    res.status(200).json({ message: "Logged out successfully" });
+  },
   //Forget Password is started from here
   forgetPassword: [
     authValidator.forgetPassword,
@@ -106,6 +114,39 @@ export const authControllers = {
       const { email } = req.body;
       const { otp, rememberToken } = await authServices.forgetPassword(email);
       res.status(200).json({ otp, rememberToken });
+    },
+  ],
+  // Verify Otp for forget password is started from here
+  verifyOtpForForgetPassword: [
+    authValidator.verifyOtpForForgetPassword,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { email, otp, token } = req.body;
+      const { verifyToken } = await authServices.verifyOtpForForgetPassword(
+        email,
+        otp,
+        token,
+      );
+      res.status(200).json({
+        message: "OTP verified successfully to reset password.",
+        verifyToken,
+      });
+    },
+  ],
+  // Reset Password is started from here
+  resetPassword: [
+    authValidator.resetPassword,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { email, password, token } = req.body;
+      await authServices.resetPassword(email, password, token);
+      res.status(200).json({ message: "Password reset successfully." });
     },
   ],
 };
