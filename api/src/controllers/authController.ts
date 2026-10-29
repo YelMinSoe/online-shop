@@ -21,11 +21,10 @@ export const authControllers = {
       }
       const { email } = req.body;
       // Calling auth Service with return value of rememberToken and otp
-      const { rememberToken, otp } = await authServices.register(email);
+      const { otp } = await authServices.register(email);
 
       return res.status(200).json({
         message: "We sent OTP to your email.Please check it.",
-        rememberToken,
         otp,
       });
     },
@@ -39,8 +38,8 @@ export const authControllers = {
       if (errors.length > 0) {
         errorResponse(401, errors[0].msg);
       }
-      const { email, otp, token } = req.body;
-      const { verifyToken } = await authServices.verifyOtp(email, otp, token);
+      const { email, otp } = req.body;
+      const { verifyToken } = await authServices.verifyOtp(email, otp);
       res
         .status(200)
         .json({ message: "OTP verified successfully.", verifyToken });
@@ -54,9 +53,9 @@ export const authControllers = {
       if (errors.length > 0) {
         errorResponse(401, errors[0].msg);
       }
-      const { email, password, token } = req.body;
+      const { email, password, verifyToken } = req.body;
       const { id, accessToken, refreshToken } =
-        await authServices.confrimPassword(email, password, token);
+        await authServices.confrimPassword(email, password, verifyToken);
       res
         .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
         .cookie(
@@ -97,7 +96,7 @@ export const authControllers = {
   ],
   //Logout is started from here
   logout: async (req: Request, res: Response, next: NextFunction) => {
-    const refreshToken = req.cookies ? req.cookies.refresh : null;
+    const refreshToken = req.cookies ? req.cookies.refreshToken : null;
     await authServices.logout(refreshToken);
     res.clearCookie("accessToken", setCookie(15 * 60 * 1000));
     res.clearCookie("refreshToken", setCookie(30 * 24 * 60 * 60 * 1000));
@@ -112,8 +111,10 @@ export const authControllers = {
         errorResponse(401, errors[0].msg);
       }
       const { email } = req.body;
-      const { otp, rememberToken } = await authServices.forgetPassword(email);
-      res.status(200).json({ otp, rememberToken });
+      const { otp } = await authServices.forgetPassword(email);
+      res
+        .status(200)
+        .json({ otp, message: "We sent OTP to your email.Please check it." });
     },
   ],
   // Verify Otp for forget password is started from here
@@ -124,15 +125,10 @@ export const authControllers = {
       if (errors.length > 0) {
         errorResponse(401, errors[0].msg);
       }
-      const { email, otp, token } = req.body;
-      const { verifyToken } = await authServices.verifyOtpForForgetPassword(
-        email,
-        otp,
-        token,
-      );
+      const { email, otp } = req.body;
+      await authServices.verifyOtpForForgetPassword(email, otp);
       res.status(200).json({
         message: "OTP verified successfully to reset password.",
-        verifyToken,
       });
     },
   ],
@@ -144,8 +140,8 @@ export const authControllers = {
       if (errors.length > 0) {
         errorResponse(401, errors[0].msg);
       }
-      const { email, password, token } = req.body;
-      await authServices.resetPassword(email, password, token);
+      const { email, password } = req.body;
+      await authServices.resetPassword(email, password);
       res.status(200).json({ message: "Password reset successfully." });
     },
   ],

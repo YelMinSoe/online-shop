@@ -20,7 +20,7 @@ import {
   checkUserExist,
 } from "../utils/auth.ts";
 import { errorResponse } from "../utils/errorResponse.ts";
-import { accessToken, newRefreshToken } from "../utils/createToken.ts";
+import { createAccessToken, createRefreshToken } from "../utils/createToken.ts";
 import jwt from "jsonwebtoken";
 
 export const authServices = {
@@ -38,7 +38,7 @@ export const authServices = {
     const salt = await bcrypt.genSalt(10);
     const hashedOtp = await bcrypt.hash(otp.toString(), salt);
     // OTP Data
-    const otpData = { email, otp: hashedOtp, rememberToken };
+    const otpData = { email, otp: hashedOtp };
 
     // check otp row (otp record)
     const otpRow = await getOtpRowByEmail(email);
@@ -64,13 +64,13 @@ export const authServices = {
     // Sending Email is here
     // await sendEmail({ to: email, viewFileName: "email", otp });
 
-    // Return values are here
-    return { rememberToken, otp };
+    // Return values are here but in production, we will not return otp for security.
+    return { otp };
   },
   /* 
   Veriry OTP is started from here
    */
-  verifyOtp: async (email: string, otp: string, token: string) => {
+  verifyOtp: async (email: string, otp: string) => {
     // user is here and check user existing
     const user = await getUserByEmail(email);
     checkUserExist(user);
@@ -91,11 +91,6 @@ export const authServices = {
         "You have reached the maximum number of OTP attempts.Please try again later.",
       );
     }
-    // Check remember token that's got from otp request and token from request body (for security)
-    if (otpRow?.rememberToken !== token) {
-      await updateOtp(otpRow!.id, { errorCount: 5 });
-      errorResponse(401, "This is attacked request.");
-    }
 
     // Check otp is expired or not
     const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 5;
@@ -111,15 +106,26 @@ export const authServices = {
       });
       errorResponse(401, "Wrong OTP.Please try again");
     }
+
     const verifyToken = tokenGenerator();
-    await updateOtp(otpRow!.id, { verifyToken, errorCount: 0 });
-    // Return values
+    const salt = await bcrypt.genSalt(10);
+    const hashedVerifyToken = await bcrypt.hash(verifyToken, salt);
+
+    await updateOtp(otpRow!.id, {
+      verifyToken: hashedVerifyToken,
+      errorCount: 0,
+    });
+
     return { verifyToken };
   },
   /* 
   Confirm password is started from here 
   */
-  confrimPassword: async (email: string, password: string, token: string) => {
+  confrimPassword: async (
+    email: string,
+    password: string,
+    verifyToken: string,
+  ) => {
     // user is here and check user existing
     const user = await getUserByEmail(email);
     checkUserExist(user);
@@ -135,32 +141,38 @@ export const authServices = {
       );
     }
 
-    // check verify token that's got from verify and token from request body (for security)
-    if (otpRow?.verifyToken !== token) {
-      await updateOtp(otpRow!.id, { errorCount: 5 });
-      errorResponse(401, "This is attacked request.");
-    }
-
     // Check it is  expired
     const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 10;
     if (isExpired) {
       errorResponse(401, "This service is expired. Please try again.");
     }
+    if (!otpRow?.verifyToken) {
+      await updateOtp(otpRow!.id, { errorCount: 5 });
+      return errorResponse(401, "OTP verification required.");
+    }
+
+    const isMatched = await bcrypt.compare(verifyToken, otpRow?.verifyToken!);
+    if (!isMatched) {
+      await updateOtp(otpRow!.id, { errorCount: 5 });
+      errorResponse(401, "This is attack action.");
+    }
+
     // Hashing password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const refreshToken = "I will replace with jwt refresh token";
 
     // Create user
+    console.log("Error found here");
     const newUser = await createUser({
       email,
       password: hashedPassword,
-      refreshToken,
+      refreshToken: tokenGenerator(),
     });
+    console.log("Error done here");
 
     // JWT tokens
-    const access = accessToken(newUser.id);
-    const refresh = newRefreshToken(newUser.id, newUser.email);
+    const access = createAccessToken(newUser.id);
+    const refresh = createRefreshToken(newUser.id, newUser.email);
 
     // Update user
     await updateUser(newUser.id, { refreshToken: refresh });
@@ -173,6 +185,7 @@ export const authServices = {
   login: async (email: string, password: string) => {
     // Check user existing
     const user = await getUserByEmail(email);
+    const otpRow = await getOtpRowByEmail(email);
     if (!user) errorResponse(404, "User not Found");
 
     // Check user's status freeze or not
@@ -201,10 +214,11 @@ export const authServices = {
       errorResponse(401, "Invalid password. Please try again.");
     }
 
-    const access = accessToken(user!.id);
-    const refresh = newRefreshToken(user!.id, user!.email);
+    const access = createAccessToken(user!.id);
+    const refresh = createRefreshToken(user!.id, user!.email);
 
     await updateUser(user!.id, { refreshToken: refresh, loginErrorCount: 0 });
+    await updateOtp(otpRow!.id, { requestedCount: 0 });
 
     return { id: user?.id, accessToken: access, refreshToken: refresh };
   },
@@ -213,10 +227,13 @@ export const authServices = {
   */
   logout: async (refreshToken: string) => {
     // Check refresh token
+    console.log("Error found here 1");
     if (!refreshToken) {
       errorResponse(400, "You are not unauthenticated user");
     }
     // Verify refresh token
+    console.log("Error found here 2");
+
     let decoded;
     try {
       decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as {
@@ -227,6 +244,8 @@ export const authServices = {
       errorResponse(400, "You are not unauthenticated user");
     }
     // Check id is number or not {this is option for security}
+    console.log("Error found here 3");
+
     if (isNaN(decoded!.id)) {
       errorResponse(400, "You are not unauthenticated user");
     }
@@ -274,27 +293,23 @@ export const authServices = {
     }
 
     const otp = otpGenerator();
-    const rememberToken = tokenGenerator();
 
     const salt = await bcrypt.genSalt(10);
     const hashOtp = await bcrypt.hash(otp.toString(), salt);
 
-    await updateOtp(otpRow!.id, { otp: hashOtp, rememberToken });
+    await updateOtp(otpRow!.id, { otp: hashOtp, errorCount: 0 });
 
     // Sending Email is here
     // await sendEmail({ to: email, viewFileName: "email", otp });
 
-    return { otp, rememberToken };
+    // Return values are here but in production, we will not return otp for security.
+    return { otp };
   },
 
   /* 
   Verify otp for forget password is started from here 
   */
-  verifyOtpForForgetPassword: async (
-    email: string,
-    otp: string,
-    token: string,
-  ) => {
+  verifyOtpForForgetPassword: async (email: string, otp: string) => {
     const user = await getUserByEmail(email);
     const otpRow = await getOtpRowByEmail(email);
     if (!user || email !== otpRow?.email) {
@@ -302,13 +317,6 @@ export const authServices = {
     }
 
     if (otpRow?.errorCount === 5) {
-      errorResponse(
-        401,
-        "You have reached the maximum number of OTP attempts.Please try again later.",
-      );
-    }
-    if (otpRow!.rememberToken !== token) {
-      await updateOtp(otpRow!.id, { errorCount: 5 });
       errorResponse(
         401,
         "You have reached the maximum number of OTP attempts.Please try again later.",
@@ -338,21 +346,14 @@ export const authServices = {
       errorResponse(401, "Wrong OTP.Please try again");
     }
 
-    const verifyToken = tokenGenerator();
-    await updateOtp(otpRow!.id, { verifyToken, errorCount: 0 });
-
-    return { verifyToken };
+    await updateOtp(otpRow!.id, { errorCount: 0 });
   },
-  resetPassword: async (email: string, password: string, token: string) => {
+  resetPassword: async (email: string, password: string) => {
     const user = await getUserByEmail(email);
     const otpRow = await getOtpRowByEmail(email);
 
     if (!user || email !== otpRow?.email) {
       errorResponse(401, "This email has not been registered");
-    }
-
-    if (otpRow?.verifyToken !== token) {
-      errorResponse(401, "This is attacked request.");
     }
     if (otpRow?.errorCount === 5) {
       errorResponse(
@@ -370,8 +371,8 @@ export const authServices = {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // JWT tokens
-    const access = accessToken(user!.id);
-    const refresh = newRefreshToken(user!.id, user!.email);
+    const access = createAccessToken(user!.id);
+    const refresh = createRefreshToken(user!.id, user!.email);
 
     await updateUser(user!.id, {
       password: hashedPassword,

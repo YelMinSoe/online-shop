@@ -27,11 +27,6 @@ export const authValidator = {
       .withMessage("OTP is required.")
       .isLength({ min: 6, max: 6 })
       .withMessage("OTP must be 6 digits  long."),
-    body("token", "Invalid verify token and please try again.")
-      .trim()
-      .notEmpty()
-      .withMessage("Verify token is required.")
-      .escape(),
   ],
   confirmPassword: [
     body("email", "Invalid email and please try again.")
@@ -50,7 +45,7 @@ export const authValidator = {
       .withMessage("Password must be exactly 8 digits long.")
       .matches("^[0-9]+$")
       .withMessage("Password must contain only numbers."),
-    body("token", "Invalid verify token and please try again.")
+    body("verifyToken", "Invalid verify token and please try again.")
       .trim()
       .notEmpty()
       .withMessage("Verify token is required.")
@@ -99,11 +94,6 @@ export const authValidator = {
       .withMessage("OTP is required.")
       .isLength({ min: 6, max: 6 })
       .withMessage("OTP must be 6 digits  long."),
-    body("token", "Invalid verify token and please try again.")
-      .trim()
-      .notEmpty()
-      .withMessage("Verify token is required.")
-      .escape(),
   ],
   resetPassword: [
     body("email", "Invalid email and please try again.")
@@ -122,10 +112,5 @@ export const authValidator = {
       .withMessage("Password must be exactly 8 digits long.")
       .matches("^[0-9]+$")
       .withMessage("Password must contain only numbers."),
-    body("token", "Invalid verify token and please try again.")
-      .trim()
-      .notEmpty()
-      .withMessage("Verify token is required.")
-      .escape(),
   ],
 };
