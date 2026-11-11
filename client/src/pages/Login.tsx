@@ -133,7 +133,7 @@ const Login = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full md:h-11 md:text-base lg:h-14 lg:text-lg"
+          className="w-full cursor-pointer md:h-11 md:text-base lg:h-14 lg:text-lg"
         >
           {isSubmitting ? "Logging in..." : "Login"}
         </Button>

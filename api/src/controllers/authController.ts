@@ -124,9 +124,13 @@ export const authControllers = {
         errorResponse(401, errors[0].msg);
       }
       const { email, otp } = req.body;
-      await authServices.verifyOtpForForgetPassword(email, otp);
+      const { verifyToken } = await authServices.verifyOtpForForgetPassword(
+        email,
+        otp,
+      );
       res.status(200).json({
         message: "OTP verified successfully to reset password.",
+        verifyToken,
       });
     },
   ],
@@ -139,8 +143,17 @@ export const authControllers = {
         errorResponse(401, errors[0].msg);
       }
       const { email, password } = req.body;
-      await authServices.resetPassword(email, password);
-      res.status(200).json({ message: "Password reset successfully." });
+      const { id, registeredEmail, accessToken, refreshToken } =
+        await authServices.resetPassword(email, password);
+      res
+        .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
+        .cookie(
+          "refreshToken",
+          refreshToken,
+          setCookie(30 * 24 * 60 * 60 * 1000),
+        )
+        .status(200)
+        .json({ message: "Password reset successfully.", id, registeredEmail });
     },
   ],
 };

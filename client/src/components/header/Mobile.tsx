@@ -31,7 +31,7 @@ const Mobile = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/auth/logout", {}, { withCredentials: true })
+      await axios.post("/api/auth/logout")
       dispatch({ type: "LOGOUT" })
       navigate("/products")
     } catch (error) {

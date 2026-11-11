@@ -66,6 +66,12 @@ const ConfirmPassword = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="flex w-full max-w-sm flex-col gap-4 rounded-md border p-6 shadow-md md:max-w-md md:gap-5 md:p-8 lg:max-w-lg lg:gap-6 lg:p-10"
       >
+        <label
+          htmlFor="password"
+          className="text-sm font-bold md:text-base lg:text-lg"
+        >
+          Password
+        </label>
         <div className="relative">
           <input
             {...register("confirmPassword")}

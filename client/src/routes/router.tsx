@@ -9,6 +9,10 @@ import VerifyOtp from "@/pages/VerifyOtp"
 import RegisterLayout from "../layouts/RegisterLayout"
 import ConfirmPassword from "@/pages/ConfirmPassword"
 import Login from "@/pages/Login"
+import ForgotPassword from "@/pages/ForgotPassword"
+import VerifyOtpForgotPassword from "@/pages/VerifyOtpForgotPassword"
+import ForgotPasswordLayout from "@/layouts/ForgotPasswordLayout"
+import ResetPassword from "@/pages/ResetPassword"
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +34,18 @@ export const router = createBrowserRouter([
       {
         path: "login",
         Component: Login,
+      },
+      {
+        path: "forgot-password",
+        Component: ForgotPasswordLayout,
+        children: [
+          { index: true, Component: ForgotPassword },
+          {
+            path: "verify-otp",
+            Component: VerifyOtpForgotPassword,
+          },
+          { path: "reset-password", Component: ResetPassword },
+        ],
       },
     ],
   },

@@ -356,7 +356,15 @@ export const authServices = {
       errorResponse(401, "Wrong OTP.Please try again");
     }
 
-    await updateOtp(otpRow!.id, { errorCount: 0 });
+    const verifyToken = tokenGenerator();
+    const salt = await bcrypt.genSalt(10);
+    const hashedVerifyToken = await bcrypt.hash(verifyToken, salt);
+
+    await updateOtp(otpRow!.id, {
+      verifyToken: hashedVerifyToken,
+      errorCount: 0,
+    });
+    return { verifyToken };
   },
   resetPassword: async (email: string, password: string) => {
     const user = await getUserByEmail(email);
@@ -370,6 +378,10 @@ export const authServices = {
         401,
         "You have reached the maximum number of OTP attempts.Please try again later.",
       );
+    }
+    if (!otpRow?.verifyToken) {
+      await updateOtp(otpRow!.id, { errorCount: 5 });
+      return errorResponse(401, "OTP verification required.");
     }
 
     const isExpired = moment().diff(otpRow?.updatedAt, "minutes") > 10;
@@ -389,6 +401,11 @@ export const authServices = {
       refreshToken: refresh,
     });
 
-    return { id: user!.id, accessToken: access, refreshToken: refresh };
+    return {
+      id: user!.id,
+      registeredEmail: user?.email,
+      accessToken: access,
+      refreshToken: refresh,
+    };
   },
 };

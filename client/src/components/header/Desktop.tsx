@@ -18,11 +18,7 @@ const Desktop = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(
-        "/api/auth/logout",
-        {},
-        { withCredentials: true }
-      )
+      const response = await axios.post("/api/auth/logout")
       toast.success(response.data.message)
       dispatch({ type: "LOGOUT" })
       navigate("/products")
