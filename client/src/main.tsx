@@ -11,7 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider.tsx"
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
-      <RouterProvider router={router} />,
+      <RouterProvider router={router} />
     </ThemeProvider>
   </StrictMode>
 )

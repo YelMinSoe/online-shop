@@ -12,7 +12,7 @@ const Home = () => {
           <img
             src={homeImage}
             alt="Home"
-            className="mb-8 h-full w-full object-contain lg:order-last lg:mr-4 lg:h-150 lg:w-150"
+            className="mb-8 h-full w-full animate-fade-in-right object-contain lg:order-last lg:mr-4 lg:h-150 lg:w-150"
           />
           <div className="">
             <h1 className="text-xl font-bold lg:text-3xl">
@@ -22,11 +22,14 @@ const Home = () => {
               Discover quality products at prices you'll love. Fast delivery and
               easy returns on every order.
             </p>
-            <Button variant="default" className="mt-4 cursor-pointer">
-              <Link to="/products" className="flex items-center">
-                <span className="">Shop Now</span>
-                <ArrowRight className="mr-2 h-4 w-4" />
-              </Link>
+            <Button
+              nativeButton={false}
+              variant="default"
+              className="mt-4 cursor-pointer"
+              render={<Link to="/products" />}
+            >
+              Shop Now
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>

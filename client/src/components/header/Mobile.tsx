@@ -23,7 +23,7 @@ import {
 
 const Mobile = () => {
   return (
-    <div className="flex h-full items-center justify-between gap-8 lg:hidden">
+    <div className="flex h-full items-center justify-between gap-8 xl:hidden">
       <NavLink to="/">
         <h1 className="ml-5 text-xl font-semibold">Team Hex Shop</h1>
       </NavLink>
@@ -52,34 +52,72 @@ const Mobile = () => {
               </SheetTitle>
             </SheetHeader>
             <ul className="">
-              <SheetClose className="flex w-full flex-col gap-6 p-4">
-                <Button variant="outline" className="w-full">
+              <SheetClose
+                nativeButton={false}
+                render={<li />}
+                className="flex w-full flex-col gap-6 p-4"
+              >
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  nativeButton={false}
+                  render={<NavLink to="/" />}
+                >
                   <Home className="mr-2 h-4 w-4" />
-                  <NavLink to="/">Home</NavLink>
+                  Home
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  nativeButton={false}
+                  render={<NavLink to="/products" />}
+                >
                   <Package2 className="mr-2 h-4 w-4" />
-                  <NavLink to="/products">Products</NavLink>
+                  Products
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  nativeButton={false}
+                  render={<NavLink to="/about" />}
+                >
                   <Info className="mr-2 h-4 w-4" />
-                  <NavLink to="/about">About</NavLink>
+                  About
                 </Button>
               </SheetClose>
             </ul>
             <SheetFooter>
-              <SheetClose className="flex w-full flex-col gap-4 p-4">
-                <Button variant="destructive" className="w-full">
+              <SheetClose
+                nativeButton={false}
+                render={<div />}
+                className="flex w-full flex-col gap-4 p-4"
+              >
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  nativeButton={false}
+                  render={<NavLink to="/register" />}
+                >
                   <UserPlus className="mr-2 h-4 w-4" />
-                  <NavLink to="/register">Register</NavLink>
+                  Register
                 </Button>
-                <Button variant="destructive" className="w-full">
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  nativeButton={false}
+                  render={<NavLink to="/login" />}
+                >
                   <LogIn className="mr-2 h-4 w-4" />
-                  <NavLink to="/login">Login</NavLink>
+                  Login
                 </Button>
-                <Button variant="destructive" className="w-full">
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  nativeButton={false}
+                  render={<NavLink to="/admin-dashboard" />}
+                >
                   <LayoutDashboard className="mr-2 h-4 w-4" />
-                  <NavLink to="/admin-dashboard">Admin Dashboard</NavLink>
+                  Admin Dashboard
                 </Button>
               </SheetClose>
             </SheetFooter>

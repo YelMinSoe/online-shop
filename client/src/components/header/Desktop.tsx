@@ -10,7 +10,7 @@ import {
 
 const Desktop = () => {
   return (
-    <div className="hidden h-full items-center justify-between px-10 lg:flex">
+    <div className="hidden h-full items-center justify-between px-10 xl:flex">
       <NavLink to="/">
         <h1 className="ml-4 text-2xl font-bold">Team Hex Shop</h1>
       </NavLink>
@@ -44,17 +44,31 @@ const Desktop = () => {
       <ul className="flex items-center gap-7">
         <p className="text-lg font-medium">user@example.com</p>
 
-        <Button variant="destructive">
+        <Button
+          variant="destructive"
+          nativeButton={false}
+          render={<NavLink to="/register" />}
+        >
           <UserPlus className="mr-2 h-4 w-4" />
-          <NavLink to="/register">Register</NavLink>
+          Register
         </Button>
-        <Button variant="destructive">
+
+        <Button
+          variant="destructive"
+          nativeButton={false}
+          render={<NavLink to="/login" />}
+        >
           <LogIn className="mr-2 h-4 w-4" />
-          <NavLink to="/login">Login</NavLink>
+          Login
         </Button>
-        <Button variant="destructive">
+
+        <Button
+          variant="destructive"
+          nativeButton={false}
+          render={<NavLink to="/admin-dashboard" />}
+        >
           <LayoutDashboard className="mr-2 h-4 w-4" />
-          <NavLink to="/admin-dashboard">Admin Dashboard</NavLink>
+          Admin Dashboard
         </Button>
         <Button variant="outline" className="relative">
           <ShoppingCartMinus className="h-5 w-5" />
