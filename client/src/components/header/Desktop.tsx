@@ -9,7 +9,7 @@ import {
   UserPlus,
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
-import axios, { isAxiosError } from "axios"
+import axios, { isAxiosError } from "@/helpers/axios"
 import { toast } from "react-toastify"
 
 const Desktop = () => {
@@ -19,7 +19,7 @@ const Desktop = () => {
   const handleLogout = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:7070/api/auth/logout",
+        "/api/auth/logout",
         {},
         { withCredentials: true }
       )

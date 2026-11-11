@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useForm } from "react-hook-form"
-import axios, { isAxiosError } from "axios"
+import axios, { isAxiosError } from "@/helpers/axios"
+
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router"
 import { useState } from "react"
@@ -35,11 +36,11 @@ const ConfirmPassword = () => {
     const email = sessionStorage.getItem("registeredEmail")
     const verifyToken = sessionStorage.getItem("verifyToken")
     try {
-      const response = await axios.post(
-        "http://localhost:7070/api/auth/confirm-password",
-        { email, password: data.confirmPassword, verifyToken },
-        { withCredentials: true }
-      )
+      const response = await axios.post("/api/auth/confirm-password", {
+        email,
+        password: data.confirmPassword,
+        verifyToken,
+      })
       const registeredEmail = response.data.registeredEmail
       if (registeredEmail) {
         dispatch({ type: "LOGIN", payload: { email: registeredEmail } })

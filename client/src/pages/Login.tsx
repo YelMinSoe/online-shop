@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { isAxiosError } from "axios"
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router"
 import { toast } from "react-toastify"
 import z from "zod"
-import axios from "axios"
+import axios, { isAxiosError } from "@/helpers/axios"
 
 const loginSchema = z.object({
   email: z.email("Invalid email address"),
@@ -32,11 +31,7 @@ const Login = () => {
   })
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await axios.post(
-        "http://localhost:7070/api/auth/login",
-        data,
-        { withCredentials: true }
-      )
+      const response = await axios.post("/api/auth/login", data)
       const registeredEmail = response.data.registeredEmail
       if (registeredEmail) {
         dispatch({ type: "LOGIN", payload: { email: registeredEmail } })

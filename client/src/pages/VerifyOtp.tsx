@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button"
 import * as z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import axios, { isAxiosError } from "axios"
-import { Navigate, useNavigate } from "react-router"
+import axios, { isAxiosError } from "@/helpers/axios"
+
+import { useNavigate } from "react-router"
 import { toast } from "react-toastify"
 
 const verifyOtpSchema = z.object({
@@ -25,13 +26,13 @@ const VerifyOtp = () => {
   } = useForm<verifyOtpFormData>({
     resolver: zodResolver(verifyOtpSchema),
   })
-  if (!email) return <Navigate to="/register" replace />
+
   const onSubmit = async (data: verifyOtpFormData) => {
     try {
-      const response = await axios.post(
-        "http://localhost:7070/api/auth/verify-otp",
-        { email, otp: data.otp }
-      )
+      const response = await axios.post("/api/auth/verify-otp", {
+        email,
+        otp: data.otp,
+      })
       toast.success(response.data.message)
       sessionStorage.setItem("verifyToken", response.data.verifyToken)
       reset()

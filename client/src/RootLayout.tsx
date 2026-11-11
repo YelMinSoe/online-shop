@@ -8,7 +8,7 @@ const RootLayout = () => {
       <div className="">
         <Header />
         <Outlet />
-        <ToastContainer position="top-center" autoClose={5000} />
+        <ToastContainer position="top-center" autoClose={3000} />
       </div>
     </>
   )

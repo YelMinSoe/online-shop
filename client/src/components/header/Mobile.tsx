@@ -22,7 +22,7 @@ import {
   UserPlus,
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
-import axios, { isAxiosError } from "axios"
+import axios, { isAxiosError } from "@/helpers/axios"
 import { toast } from "react-toastify"
 
 const Mobile = () => {
@@ -31,11 +31,7 @@ const Mobile = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        "http://localhost:7070/api/auth/logout",
-        {},
-        { withCredentials: true }
-      )
+      await axios.post("/api/auth/logout", {}, { withCredentials: true })
       dispatch({ type: "LOGOUT" })
       navigate("/products")
     } catch (error) {

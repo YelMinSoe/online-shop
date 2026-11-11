@@ -3,7 +3,7 @@ import * as z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useNavigate } from "react-router"
-import axios from "axios"
+import axios from "@/helpers/axios"
 
 import { toast } from "react-toastify"
 
@@ -28,10 +28,7 @@ const Register = () => {
   const onSubmit = (data: RegisterFormData) => {
     const requestOtp = async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:7070/api/auth/register",
-          data
-        )
+        const response = await axios.post("/api/auth/register", data)
         console.log(response.data.otp)
         toast.success(response.data.message)
         reset()
