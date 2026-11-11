@@ -21,7 +21,7 @@ app
   .use(helmet())
   .use(express.urlencoded({ extended: true }))
   .use(express.json())
-  .use(cors())
+  .use(cors({ origin: "http://localhost:5173", credentials: true }))
   .use(cookieParser());
 
 //Using Ejs

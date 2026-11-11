@@ -177,7 +177,12 @@ export const authServices = {
     // Update user
     await updateUser(newUser.id, { refreshToken: refresh });
 
-    return { id: newUser.id, accessToken: access, refreshToken: refresh };
+    return {
+      id: newUser.id,
+      registeredEmail: newUser.email,
+      accessToken: access,
+      refreshToken: refresh,
+    };
   },
   /* 
   Login is started from here 
@@ -220,7 +225,12 @@ export const authServices = {
     await updateUser(user!.id, { refreshToken: refresh, loginErrorCount: 0 });
     await updateOtp(otpRow!.id, { requestedCount: 0 });
 
-    return { id: user?.id, accessToken: access, refreshToken: refresh };
+    return {
+      id: user?.id,
+      registeredEmail: user?.email,
+      accessToken: access,
+      refreshToken: refresh,
+    };
   },
   /* 
   Login is started from here 

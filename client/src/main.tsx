@@ -7,11 +7,14 @@ import { router } from "@/routes/router"
 
 import "./index.css"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
+import { AuthContextProvider } from "./context/AuthContext"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
-      <RouterProvider router={router} />
+      <AuthContextProvider>
+        <RouterProvider router={router} />
+      </AuthContextProvider>
     </ThemeProvider>
   </StrictMode>
 )

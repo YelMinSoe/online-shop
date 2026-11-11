@@ -1,14 +1,39 @@
 import { Button } from "@/components/ui/button"
-import { NavLink } from "react-router"
+import { NavLink, useNavigate } from "react-router"
 import { ModeToggle } from "../mode-toggle"
 import {
   LayoutDashboard,
   LogIn,
+  LogOut,
   ShoppingCartMinus,
   UserPlus,
 } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
+import axios, { isAxiosError } from "axios"
+import { toast } from "react-toastify"
 
 const Desktop = () => {
+  const navigate = useNavigate()
+  const { email, dispatch } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:7070/api/auth/logout",
+        {},
+        { withCredentials: true }
+      )
+      toast.success(response.data.message)
+      dispatch({ type: "LOGOUT" })
+      navigate("/products")
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast.error(error.response?.data?.message ?? "Something went wrong")
+      } else {
+        toast.error("An unexpected error occurred")
+      }
+    }
+  }
   return (
     <div className="hidden h-full items-center justify-between px-10 xl:flex">
       <NavLink to="/">
@@ -42,26 +67,46 @@ const Desktop = () => {
       </ul>
       {/* User Controls */}
       <ul className="flex items-center gap-7">
-        <p className="text-lg font-medium">user@example.com</p>
-
-        <Button
-          variant="destructive"
-          nativeButton={false}
-          render={<NavLink to="/register" />}
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Register
-        </Button>
-
-        <Button
-          variant="destructive"
-          nativeButton={false}
-          render={<NavLink to="/login" />}
-        >
-          <LogIn className="mr-2 h-4 w-4" />
-          Login
-        </Button>
-
+        {email ? (
+          <>
+            <li>
+              <p className="text-lg font-medium">{email}</p>
+            </li>
+            <li>
+              <Button
+                variant="destructive"
+                onClick={handleLogout}
+                className="cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </li>
+          </>
+        ) : (
+          <>
+            <li>
+              <Button
+                variant="destructive"
+                nativeButton={false}
+                render={<NavLink to="/register" />}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Register
+              </Button>
+            </li>
+            <li>
+              <Button
+                variant="destructive"
+                nativeButton={false}
+                render={<NavLink to="/login" />}
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            </li>
+          </>
+        )}
         <Button
           variant="destructive"
           nativeButton={false}
@@ -70,7 +115,7 @@ const Desktop = () => {
           <LayoutDashboard className="mr-2 h-4 w-4" />
           Admin Dashboard
         </Button>
-        <Button variant="outline" className="relative">
+        <Button variant="outline" className="relative cursor-pointer">
           <ShoppingCartMinus className="h-5 w-5" />
 
           <span className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-medium text-white">

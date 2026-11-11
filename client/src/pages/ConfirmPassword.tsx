@@ -7,6 +7,7 @@ import { toast } from "react-toastify"
 import { useNavigate } from "react-router"
 import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 const confirmPasswordSchema = z.object({
   confirmPassword: z
@@ -19,6 +20,7 @@ type confirmPasswordFormData = z.infer<typeof confirmPasswordSchema>
 const ConfirmPassword = () => {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const { dispatch } = useAuth()
 
   const {
     register,
@@ -35,14 +37,18 @@ const ConfirmPassword = () => {
     try {
       const response = await axios.post(
         "http://localhost:7070/api/auth/confirm-password",
-        { email, password: data.confirmPassword, verifyToken }
+        { email, password: data.confirmPassword, verifyToken },
+        { withCredentials: true }
       )
-      toast.success(response.data.message)
+      const registeredEmail = response.data.registeredEmail
+      if (registeredEmail) {
+        dispatch({ type: "LOGIN", payload: { email: registeredEmail } })
+        toast.success(response.data.message)
+        reset()
+        navigate("/products")
+      }
       sessionStorage.removeItem("registeredEmail")
       sessionStorage.removeItem("verifyToken")
-
-      reset()
-      navigate("/products")
     } catch (error) {
       if (isAxiosError(error)) {
         setError("confirmPassword", {

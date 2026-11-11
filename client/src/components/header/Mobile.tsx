@@ -1,4 +1,4 @@
-import { NavLink } from "react-router"
+import { NavLink, useNavigate } from "react-router"
 import { Button } from "../ui/button"
 import {
   Sheet,
@@ -15,13 +15,37 @@ import {
   Info,
   LayoutDashboard,
   LogIn,
+  LogOut,
   Menu,
   Package2,
   ShoppingCartMinus,
   UserPlus,
 } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
+import axios, { isAxiosError } from "axios"
+import { toast } from "react-toastify"
 
 const Mobile = () => {
+  const { email, dispatch } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:7070/api/auth/logout",
+        {},
+        { withCredentials: true }
+      )
+      dispatch({ type: "LOGOUT" })
+      navigate("/products")
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast.error(error.response?.data?.message ?? "Something went wrong")
+      } else {
+        toast.error("An unexpected error occurred")
+      }
+    }
+  }
   return (
     <div className="flex h-full items-center justify-between gap-8 xl:hidden">
       <NavLink to="/">
@@ -48,7 +72,7 @@ const Mobile = () => {
           <SheetContent>
             <SheetHeader>
               <SheetTitle className={"mt-4 text-xl font-semibold"}>
-                user@example.com
+                {!email ? "Welcome to my Shop" : email}
               </SheetTitle>
             </SheetHeader>
             <ul className="">
@@ -92,24 +116,39 @@ const Mobile = () => {
                 render={<div />}
                 className="flex w-full flex-col gap-4 p-4"
               >
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  nativeButton={false}
-                  render={<NavLink to="/register" />}
-                >
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Register
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  nativeButton={false}
-                  render={<NavLink to="/login" />}
-                >
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
-                </Button>
+                {email ? (
+                  <>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      nativeButton={false}
+                      render={<NavLink to="/register" />}
+                    >
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Register
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      nativeButton={false}
+                      render={<NavLink to="/login" />}
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Login
+                    </Button>
+                  </>
+                )}
                 <Button
                   variant="destructive"
                   className="w-full"

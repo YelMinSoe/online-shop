@@ -54,7 +54,7 @@ export const authControllers = {
         errorResponse(401, errors[0].msg);
       }
       const { email, password, verifyToken } = req.body;
-      const { id, accessToken, refreshToken } =
+      const { id, registeredEmail, accessToken, refreshToken } =
         await authServices.confrimPassword(email, password, verifyToken);
       res
         .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
@@ -64,7 +64,7 @@ export const authControllers = {
           setCookie(30 * 24 * 60 * 60 * 1000),
         )
         .status(201)
-        .json({ message: "User created successfully", id });
+        .json({ message: "User created successfully", id, registeredEmail });
     },
   ],
   //Login is started from here
@@ -78,10 +78,8 @@ export const authControllers = {
 
       const { email, password } = req.body;
 
-      const { id, accessToken, refreshToken } = await authServices.login(
-        email,
-        password,
-      );
+      const { id, registeredEmail, accessToken, refreshToken } =
+        await authServices.login(email, password);
 
       res
         .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
@@ -91,7 +89,7 @@ export const authControllers = {
           setCookie(30 * 24 * 60 * 60 * 1000),
         )
         .status(200)
-        .json({ message: "Logged in successfully", id });
+        .json({ message: "Logged in successfully", id, registeredEmail });
     },
   ],
   //Logout is started from here

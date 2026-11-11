@@ -8,6 +8,7 @@ import Register from "@/pages/Register"
 import VerifyOtp from "@/pages/VerifyOtp"
 import RegisterLayout from "../layouts/RegisterLayout"
 import ConfirmPassword from "@/pages/ConfirmPassword"
+import Login from "@/pages/Login"
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
           { path: "verify-otp", Component: VerifyOtp },
           { path: "confirm-password", Component: ConfirmPassword },
         ],
+      },
+      {
+        path: "login",
+        Component: Login,
       },
     ],
   },
