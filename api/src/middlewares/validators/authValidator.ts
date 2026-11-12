@@ -1,5 +1,4 @@
 import { body } from "express-validator";
-import morgan from "morgan";
 
 export const authValidator = {
   register: [

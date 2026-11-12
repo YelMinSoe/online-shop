@@ -11,8 +11,8 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import axios, { isAxiosError } from "@/helpers/axios"
 import { toast } from "react-toastify"
-import AdminDashboardModal from "../admin/AdminDashboard"
 import { useState } from "react"
+import AdminDashboardModal from "../admin/AdminDashboard"
 
 const Desktop = () => {
   const navigate = useNavigate()
@@ -125,7 +125,10 @@ const Desktop = () => {
         </Button>
         <ModeToggle />
       </ul>
-      <AdminDashboardModal open={adminOpen} onOpenChange={setAdminOpen} />
+      <AdminDashboardModal
+        open={adminOpen}
+        onOpenChange={setAdminOpen}
+      ></AdminDashboardModal>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { History, Package, PackagePlus, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -8,6 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import NewOrders from "./tabs/NewOrders"
+import Customers from "./tabs/Customers"
+import SentOrders from "./tabs/SentOrders"
+import CreateProduct from "./tabs/CreateProduct"
 
 type Tab = "orders" | "customers" | "history" | "createNewProduct"
 
@@ -17,6 +21,19 @@ const TABS = [
   { key: "history", label: "Sent Orders", icon: History },
   { key: "createNewProduct", label: "Create New Product", icon: PackagePlus },
 ] as const
+
+const renderTab = (tab: Tab): ReactNode => {
+  switch (tab) {
+    case "orders":
+      return <NewOrders />
+    case "customers":
+      return <Customers />
+    case "history":
+      return <SentOrders />
+    case "createNewProduct":
+      return <CreateProduct />
+  }
+}
 
 type Props = {
   open: boolean
@@ -46,7 +63,7 @@ const AdminDashboardModal = ({ open, onOpenChange }: Props) => {
               <Button
                 key={key}
                 variant={tab === key ? "default" : "ghost"}
-                className="justify-start whitespace-nowrap"
+                className="cursor-pointer justify-start whitespace-nowrap"
                 onClick={() => setTab(key)}
               >
                 <Icon className="mr-2 h-4 w-4" />
@@ -60,33 +77,7 @@ const AdminDashboardModal = ({ open, onOpenChange }: Props) => {
             <h2 className="mb-4 text-lg font-semibold">
               {TABS.find((t) => t.key === tab)?.label}
             </h2>
-
-            {/* Stat cards */}
-
-            {/* Table area */}
-
-            <div className="overflow-x-auto rounded-lg border">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Column</th>
-                    <th className="px-4 py-3 font-semibold">Column</th>
-                    <th className="px-4 py-3 font-semibold">Column</th>
-                    <th className="px-4 py-3 font-semibold">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-t">
-                    <td
-                      colSpan={4}
-                      className="px-4 py-10 text-center text-muted-foreground"
-                    >
-                      No data
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {renderTab(tab)}
           </main>
         </div>
       </DialogContent>
