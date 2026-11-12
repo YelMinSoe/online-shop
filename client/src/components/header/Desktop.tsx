@@ -11,10 +11,13 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import axios, { isAxiosError } from "@/helpers/axios"
 import { toast } from "react-toastify"
+import AdminDashboardModal from "../admin/AdminDashboard"
+import { useState } from "react"
 
 const Desktop = () => {
   const navigate = useNavigate()
-  const { email, dispatch } = useAuth()
+  const { email, role, dispatch } = useAuth()
+  const [adminOpen, setAdminOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -103,14 +106,16 @@ const Desktop = () => {
             </li>
           </>
         )}
-        <Button
-          variant="destructive"
-          nativeButton={false}
-          render={<NavLink to="/admin-dashboard" />}
-        >
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          Admin Dashboard
-        </Button>
+        {role === "ADMIN" && (
+          <Button
+            variant="destructive"
+            className="cursor-pointer"
+            onClick={() => setAdminOpen(true)}
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Admin Dashboard
+          </Button>
+        )}
         <Button variant="outline" className="relative cursor-pointer">
           <ShoppingCartMinus className="h-5 w-5" />
 
@@ -120,6 +125,7 @@ const Desktop = () => {
         </Button>
         <ModeToggle />
       </ul>
+      <AdminDashboardModal open={adminOpen} onOpenChange={setAdminOpen} />
     </div>
   )
 }

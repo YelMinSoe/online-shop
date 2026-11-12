@@ -42,8 +42,9 @@ const ConfirmPassword = () => {
         verifyToken,
       })
       const registeredEmail = response.data.registeredEmail
-      if (registeredEmail) {
-        dispatch({ type: "LOGIN", payload: { email: registeredEmail } })
+      const role = response.data.role
+      if (registeredEmail && role) {
+        dispatch({ type: "LOGIN", payload: { email: registeredEmail, role } })
         toast.success(response.data.message)
         reset()
         navigate("/products")

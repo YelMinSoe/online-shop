@@ -24,15 +24,19 @@ import {
 import { useAuth } from "@/hooks/useAuth"
 import axios, { isAxiosError } from "@/helpers/axios"
 import { toast } from "react-toastify"
+import { useState } from "react"
+import AdminDashboardModal from "../admin/AdminDashboard"
 
 const Mobile = () => {
-  const { email, dispatch } = useAuth()
+  const { email, role, dispatch } = useAuth()
   const navigate = useNavigate()
+  const [adminOpen, setAdminOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/auth/logout")
+      const response = await axios.post("/api/auth/logout")
       dispatch({ type: "LOGOUT" })
+      toast.success(response.data.message)
       navigate("/products")
     } catch (error) {
       if (isAxiosError(error)) {
@@ -145,20 +149,22 @@ const Mobile = () => {
                     </Button>
                   </>
                 )}
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  nativeButton={false}
-                  render={<NavLink to="/admin-dashboard" />}
-                >
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Admin Dashboard
-                </Button>
+                {role === "ADMIN" && (
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => setAdminOpen(true)}
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Admin Dashboard
+                  </Button>
+                )}
               </SheetClose>
             </SheetFooter>
           </SheetContent>
         </Sheet>
       </div>
+      <AdminDashboardModal open={adminOpen} onOpenChange={setAdminOpen} />
     </div>
   )
 }

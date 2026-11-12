@@ -180,6 +180,7 @@ export const authServices = {
     return {
       id: newUser.id,
       registeredEmail: newUser.email,
+      role: newUser.role,
       accessToken: access,
       refreshToken: refresh,
     };
@@ -228,6 +229,7 @@ export const authServices = {
     return {
       id: user?.id,
       registeredEmail: user?.email,
+      role: user?.role,
       accessToken: access,
       refreshToken: refresh,
     };
@@ -237,7 +239,6 @@ export const authServices = {
   */
   logout: async (refreshToken: string) => {
     // Check refresh token
-    console.log("Error found here 1");
     if (!refreshToken) {
       errorResponse(400, "You are not unauthenticated user");
     }
@@ -404,6 +405,7 @@ export const authServices = {
     return {
       id: user!.id,
       registeredEmail: user?.email,
+      role: user?.role,
       accessToken: access,
       refreshToken: refresh,
     };

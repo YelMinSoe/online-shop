@@ -9,10 +9,15 @@ import { toast } from "react-toastify"
 
 // Types
 
+type Role = "ADMIN" | "CUSTOMER"
+
 type State = {
   email: string | null
+  role: Role | null
 }
-type Action = { type: "LOGIN"; payload: { email: string } } | { type: "LOGOUT" }
+
+type Action =
+  { type: "LOGIN"; payload: { email: string; role: Role } } | { type: "LOGOUT" }
 
 type ContextType = State & { dispatch: Dispatch<Action> }
 
@@ -22,10 +27,10 @@ const AuthReducer = (state: State, action: Action) => {
   switch (action.type) {
     case "LOGIN":
       localStorage.setItem("email", JSON.stringify(action.payload))
-      return { email: action.payload.email }
+      return { email: action.payload.email, role: action.payload.role }
     case "LOGOUT":
       localStorage.removeItem("email")
-      return { email: null }
+      return { email: null, role: null }
     default:
       return state
   }
@@ -34,13 +39,17 @@ const AuthReducer = (state: State, action: Action) => {
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(AuthReducer, {
     email: null,
+    role: null,
   })
   useEffect(() => {
     try {
       const storedEmail = localStorage.getItem("email")
       if (storedEmail) {
-        const { email } = JSON.parse(storedEmail) as { email: string }
-        dispatch({ type: "LOGIN", payload: { email } })
+        const { email, role } = JSON.parse(storedEmail) as {
+          email: string
+          role: Role
+        }
+        dispatch({ type: "LOGIN", payload: { email, role } })
       } else {
         dispatch({ type: "LOGOUT" })
       }

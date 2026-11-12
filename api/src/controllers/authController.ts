@@ -54,7 +54,7 @@ export const authControllers = {
         errorResponse(401, errors[0].msg);
       }
       const { email, password, verifyToken } = req.body;
-      const { id, registeredEmail, accessToken, refreshToken } =
+      const { id, registeredEmail, role, accessToken, refreshToken } =
         await authServices.confrimPassword(email, password, verifyToken);
       res
         .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
@@ -64,7 +64,12 @@ export const authControllers = {
           setCookie(30 * 24 * 60 * 60 * 1000),
         )
         .status(201)
-        .json({ message: "User created successfully", id, registeredEmail });
+        .json({
+          message: "User created successfully",
+          id,
+          registeredEmail,
+          role,
+        });
     },
   ],
   //Login is started from here
@@ -78,7 +83,7 @@ export const authControllers = {
 
       const { email, password } = req.body;
 
-      const { id, registeredEmail, accessToken, refreshToken } =
+      const { id, registeredEmail, role, accessToken, refreshToken } =
         await authServices.login(email, password);
 
       res
@@ -89,7 +94,7 @@ export const authControllers = {
           setCookie(30 * 24 * 60 * 60 * 1000),
         )
         .status(200)
-        .json({ message: "Logged in successfully", id, registeredEmail });
+        .json({ message: "Logged in successfully", id, registeredEmail, role });
     },
   ],
   //Logout is started from here
@@ -143,7 +148,7 @@ export const authControllers = {
         errorResponse(401, errors[0].msg);
       }
       const { email, password } = req.body;
-      const { id, registeredEmail, accessToken, refreshToken } =
+      const { id, registeredEmail, role, accessToken, refreshToken } =
         await authServices.resetPassword(email, password);
       res
         .cookie("accessToken", accessToken, setCookie(15 * 60 * 1000))
@@ -153,7 +158,12 @@ export const authControllers = {
           setCookie(30 * 24 * 60 * 60 * 1000),
         )
         .status(200)
-        .json({ message: "Password reset successfully.", id, registeredEmail });
+        .json({
+          message: "Password reset successfully.",
+          id,
+          registeredEmail,
+          role,
+        });
     },
   ],
 };
