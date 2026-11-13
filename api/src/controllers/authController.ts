@@ -10,6 +10,10 @@ import { sendEmail } from "../utils/sendEmail.ts";
 import { authServices } from "../services/authService.ts";
 import { setCookie } from "../utils/setCookie.ts";
 
+//Types
+interface CustomRequest extends Request {
+  userId?: number;
+}
 export const authControllers = {
   // Register is started from here
   register: [
@@ -166,4 +170,8 @@ export const authControllers = {
         });
     },
   ],
+  me: async (req: CustomRequest, res: Response, next: NextFunction) => {
+    const { user } = await authServices.me(req.userId!);
+    return res.status(200).json({ user });
+  },
 };

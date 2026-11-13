@@ -16,7 +16,7 @@ import AdminDashboardModal from "../admin/AdminDashboard"
 
 const Desktop = () => {
   const navigate = useNavigate()
-  const { email, role, dispatch } = useAuth()
+  const { email, role, loading, dispatch } = useAuth()
   const [adminOpen, setAdminOpen] = useState(false)
 
   const handleLogout = async () => {
@@ -106,7 +106,7 @@ const Desktop = () => {
             </li>
           </>
         )}
-        {role === "ADMIN" && (
+        {!loading && role === "ADMIN" && (
           <Button
             variant="destructive"
             className="cursor-pointer"

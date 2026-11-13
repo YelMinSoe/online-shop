@@ -6,6 +6,7 @@ import moment from "moment";
 import {
   createOtp,
   createUser,
+  findUserById,
   getOtpRowByEmail,
   getUserByEmail,
   getUserById,
@@ -409,5 +410,12 @@ export const authServices = {
       accessToken: access,
       refreshToken: refresh,
     };
+  },
+  me: async (id: number) => {
+    const user = await findUserById(id);
+    if (!user) {
+      errorResponse(404, "User not found");
+    }
+    return { user };
   },
 };

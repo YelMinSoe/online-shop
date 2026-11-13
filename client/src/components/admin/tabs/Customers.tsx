@@ -32,6 +32,11 @@ const Customers = () => {
   const [error, setError] = useState(false)
   const [search, setSearch] = useState("")
 
+  // total users count
+  const totalUsers = customers.length
+  const activeUsers = customers.filter((c) => c.status === "ACTIVE").length
+  const frozenUsers = totalUsers - activeUsers
+  // fetch all user when go to admin dashboard -> customers
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
@@ -53,7 +58,7 @@ const Customers = () => {
     fetchCustomers()
   }, [])
 
-  // Confirm နှိပ်မှ API ခေါ်
+  // handle freeze user
   const handleFreezeUser = async () => {
     if (!pending) return
     setSubmitting(true)
@@ -90,10 +95,6 @@ const Customers = () => {
   const filteredCustomers = customers.filter((c) =>
     c.email.toLowerCase().includes(search.trim().toLowerCase())
   )
-  // total users count
-  const totalUsers = customers.length
-  const activeUsers = customers.filter((c) => c.status === "ACTIVE").length
-  const frozenUsers = totalUsers - activeUsers
 
   return (
     <div className="flex flex-col gap-4">

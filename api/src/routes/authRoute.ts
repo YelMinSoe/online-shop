@@ -3,6 +3,7 @@ import express from "express";
 
 // Local imports
 import { authControllers } from "../controllers/authController.ts";
+import { authMiddleware } from "../middlewares/auth.ts";
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.post(
   ...authControllers.verifyOtpForForgetPassword,
 );
 router.post("/reset-password", ...authControllers.resetPassword);
+router.get("/me", authMiddleware, authControllers.me);
 
 export default router;

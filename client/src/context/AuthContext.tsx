@@ -5,15 +5,15 @@ import {
   type Dispatch,
   type ReactNode,
 } from "react"
-import { toast } from "react-toastify"
+import axios from "@/helpers/axios"
 
 // Types
-
 type Role = "ADMIN" | "CUSTOMER"
 
 type State = {
   email: string | null
   role: Role | null
+  loading: boolean
 }
 
 type Action =
@@ -23,14 +23,12 @@ type ContextType = State & { dispatch: Dispatch<Action> }
 
 export const AuthContext = createContext<ContextType | null>(null)
 
-const AuthReducer = (state: State, action: Action) => {
+const AuthReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "LOGIN":
-      localStorage.setItem("email", JSON.stringify(action.payload))
-      return { email: action.payload.email, role: action.payload.role }
+      return { ...action.payload, loading: false }
     case "LOGOUT":
-      localStorage.removeItem("email")
-      return { email: null, role: null }
+      return { email: null, role: null, loading: false }
     default:
       return state
   }
@@ -40,24 +38,21 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(AuthReducer, {
     email: null,
     role: null,
+    loading: true,
   })
+
   useEffect(() => {
-    try {
-      const storedEmail = localStorage.getItem("email")
-      if (storedEmail) {
-        const { email, role } = JSON.parse(storedEmail) as {
-          email: string
-          role: Role
-        }
-        dispatch({ type: "LOGIN", payload: { email, role } })
-      } else {
+    const me = async () => {
+      try {
+        const response = await axios.get("/api/auth/me")
+        dispatch({ type: "LOGIN", payload: response.data.user })
+      } catch {
         dispatch({ type: "LOGOUT" })
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : String(error))
-      dispatch({ type: "LOGOUT" })
     }
+    me()
   }, [])
+
   return (
     <AuthContext.Provider value={{ ...state, dispatch }}>
       {children}
