@@ -1,0 +1,14 @@
+import express from "express";
+import { upload } from "../../middlewares/upload.ts";
+import { productController } from "../../controllers/admin/productController.ts";
+const router = express.Router();
+
+router.post(
+  "/create-new-product",
+  upload.single("product-image"),
+  ...productController.createNewProduct,
+);
+router.post("/create-category", ...productController.createCategory);
+router.delete("/drop-product/:id", ...productController.deleteProduct);
+
+export default router;

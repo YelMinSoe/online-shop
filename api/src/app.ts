@@ -10,9 +10,11 @@ import cookieParser from "cookie-parser";
 // Routes
 import authRoutes from "./routes/authRoute.ts";
 import adminRoutes from "./routes/admin/userRoute.ts";
+import productRoutes from "./routes/admin/productRoute.ts";
 // Auth Middleware
 import { authMiddleware } from "./middlewares/auth.ts";
 import { authorise } from "./middlewares/authorise.ts";
+import path from "node:path";
 
 export const app = express();
 
@@ -22,7 +24,8 @@ app
   .use(express.urlencoded({ extended: true }))
   .use(express.json())
   .use(cors({ origin: "http://localhost:5173", credentials: true }))
-  .use(cookieParser());
+  .use(cookieParser())
+  .use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 //Using Ejs
 app.set("views", "./src/views");
@@ -33,14 +36,22 @@ app.get("/health-check", (req, res) => {
   res.status(200).json({ message: "Server is Ready!" });
 });
 
-// Auth Routes
-app.use("/api/auth", authRoutes);
+// Admin routes (users)
 app.use(
   "/api/auth/admin/users",
   authMiddleware,
   authorise(true, "ADMIN"),
   adminRoutes,
 );
+// Admin routes (users)
+app.use(
+  "/api/auth/admin/products",
+  authMiddleware,
+  authorise(true, "ADMIN"),
+  productRoutes,
+);
+// Auth Routes
+app.use("/api/auth", authRoutes);
 
 // Error Handling
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {

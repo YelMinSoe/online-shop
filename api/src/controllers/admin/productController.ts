@@ -1,8 +1,58 @@
 import type { Request, Response, NextFunction } from "express";
+import { productValidator } from "../../middlewares/validators/admin/productValidator.ts";
+import { validationResult } from "express-validator";
+import { errorResponse } from "../../utils/errorResponse.ts";
+import { procuctService } from "../../services/admin/productService.ts";
 
 export const productController = {
   // create a new product
-  createNewProduct: async (req: Request, res: Response, next: NextFunction) => {
-    const { name, description, price, categoryId } = req.body;
-  },
+  createNewProduct: [
+    productValidator.createNewProduct,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { name, description, price, discount, stock, categoryId } =
+        req.body;
+
+      await procuctService.createNewProduct(
+        {
+          name,
+          description,
+          price,
+          discount,
+          stock,
+          categoryId,
+        },
+        req.file,
+      );
+      res.status(201).json({ message: "Create a new product successfully" });
+    },
+  ],
+  createCategory: [
+    productValidator.createCategory,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { name } = req.body;
+      await procuctService.createCategory(name);
+      res.status(201).json({ message: "Added category succussfully" });
+    },
+  ],
+  //   Delete product
+  deleteProduct: [
+    productValidator.deleteProduct,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { id } = req.params;
+      await procuctService.deleteProduct(Number(id));
+      res.status(200).json({ message: "Deleted product successfully" });
+    },
+  ],
 };
