@@ -79,3 +79,9 @@ export const findAllProducts = async () => {
     orderBy: { createdAt: "desc" },
   });
 };
+// Find all categories
+export const findAllCategories = async () => {
+  return await prisma.category.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+};

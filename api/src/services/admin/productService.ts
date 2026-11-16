@@ -3,6 +3,7 @@
 import {
   createCategory,
   createNewProduct,
+  findAllCategories,
   findAllProducts,
   findCategoryByName,
   findProductById,
@@ -98,5 +99,10 @@ export const procuctService = {
   getAllProducts: async () => {
     const products = await findAllProducts();
     return { products };
+  },
+  // Get all categories
+  getAllCategories: async () => {
+    const categories = await findAllCategories();
+    return { categories };
   },
 };

@@ -16,4 +16,6 @@ router.patch(
   ...productController.updateProduct,
 );
 router.get("/get-all-products", productController.getAllProducts);
+router.get("/get-categories", productController.getAllCategories);
+
 export default router;

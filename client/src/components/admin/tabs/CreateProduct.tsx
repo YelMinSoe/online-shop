@@ -67,12 +67,12 @@ const CreateProduct = () => {
       ? price - (price * discount) / 100
       : null
 
-  // useEffect(() => {
-  //   axios
-  //     .get("/api/admin/categories")
-  //     .then((res) => setCategories(res.data.categories))
-  //     .catch(() => toast.error("Failed to load categories"))
-  // }, [])
+  useEffect(() => {
+    axios
+      .get("/api/auth/admin/products/get-categories")
+      .then((res) => setCategories(res.data.categories))
+      .catch(() => toast.error("Failed to load categories"))
+  }, [])
 
   const addCategory = async () => {
     const name = newCategory.trim()
