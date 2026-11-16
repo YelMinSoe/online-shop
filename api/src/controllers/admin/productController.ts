@@ -91,4 +91,13 @@ export const productController = {
     const { categories } = await procuctService.getAllCategories();
     res.status(200).json({ categories });
   },
+  // Delete category
+  deletCategory: [
+    productValidator.deleteCategory,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const { id } = req.params;
+      await procuctService.deleteCategory(Number(id));
+      res.status(200).json({ message: "Deleted category successfully" });
+    },
+  ],
 };

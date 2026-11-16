@@ -188,7 +188,7 @@ const CreateProduct = () => {
             </option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name}
+                {c.name.toUpperCase()}
               </option>
             ))}
           </select>

@@ -85,3 +85,12 @@ export const findAllCategories = async () => {
     orderBy: { createdAt: "desc" },
   });
 };
+
+// Find category by Id
+export const findCategoryById = async (id: number) => {
+  return await prisma.category.findUnique({ where: { id } });
+};
+// Drop category
+export const dropCategory = async (id: number) => {
+  return await prisma.category.delete({ where: { id } });
+};

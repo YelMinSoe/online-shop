@@ -17,5 +17,6 @@ router.patch(
 );
 router.get("/get-all-products", productController.getAllProducts);
 router.get("/get-categories", productController.getAllCategories);
+router.delete("/drop-category/:id", ...productController.deletCategory);
 
 export default router;

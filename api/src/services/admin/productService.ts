@@ -3,8 +3,10 @@
 import {
   createCategory,
   createNewProduct,
+  dropCategory,
   findAllCategories,
   findAllProducts,
+  findCategoryById,
   findCategoryByName,
   findProductById,
   modifyProduct,
@@ -104,5 +106,13 @@ export const procuctService = {
   getAllCategories: async () => {
     const categories = await findAllCategories();
     return { categories };
+  },
+  // Delete category
+  deleteCategory: async (id: number) => {
+    const category = await findCategoryById(id);
+    if (!category) {
+      errorResponse(404, "Category not found");
+    }
+    await dropCategory(id);
   },
 };

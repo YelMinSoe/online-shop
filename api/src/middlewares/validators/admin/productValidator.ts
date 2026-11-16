@@ -51,4 +51,5 @@ export const productValidator = {
     body("stock", "Invalid stock").optional().isInt({ min: 0 }).toInt(),
     body("categoryId", "Invalid category").optional().isInt({ min: 1 }).toInt(),
   ],
+  deleteCategory: [param("id", "Invalid product id").isInt({ min: 1 }).toInt()],
 };
