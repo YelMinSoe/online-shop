@@ -15,5 +15,5 @@ router.patch(
   upload.single("product-image"),
   ...productController.updateProduct,
 );
-
+router.get("/get-all-products", productController.getAllProducts);
 export default router;

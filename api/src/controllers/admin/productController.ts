@@ -81,4 +81,8 @@ export const productController = {
       res.status(201).json({ message: "Updated product data successfully" });
     },
   ],
+  getAllProducts: async (req: Request, res: Response, next: NextFunction) => {
+    const { products } = await procuctService.getAllProducts();
+    res.status(200).json({ products });
+  },
 };

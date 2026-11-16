@@ -3,6 +3,7 @@
 import {
   createCategory,
   createNewProduct,
+  findAllProducts,
   findCategoryByName,
   findProductById,
   modifyProduct,
@@ -92,5 +93,10 @@ export const procuctService = {
     if (oldUrlPath) {
       deleteFile(oldUrlPath);
     }
+  },
+  // Get all products
+  getAllProducts: async () => {
+    const products = await findAllProducts();
+    return { products };
   },
 };
