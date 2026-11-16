@@ -1,9 +1,14 @@
+//Package import
+
 import {
   createCategory,
   createNewProduct,
-  deleteProduct,
   findCategoryByName,
+  findProductById,
+  modifyProduct,
+  removeProduct,
 } from "../../repos/admin/productRepo.ts";
+import { deleteFile } from "../../utils/deleteFile.ts";
 import { errorResponse } from "../../utils/errorResponse.ts";
 
 // Types
@@ -48,8 +53,44 @@ export const procuctService = {
     }
     await createCategory(name);
   },
+
   //   Delete product
   deleteProduct: async (id: number) => {
-    await deleteProduct(id);
+    const product = await findProductById(id);
+    if (!product) {
+      throw errorResponse(404, "Product not found");
+    }
+
+    await removeProduct(id);
+
+    // delete product's image
+    const oldUrlPath = product.images[0]?.urlPath;
+    if (oldUrlPath) {
+      await deleteFile(oldUrlPath);
+    }
+  },
+  //   update product
+  updateProduct: async (
+    id: number,
+    {
+      name,
+      description,
+      price,
+      discount,
+      stock,
+      categoryId,
+    }: CreateNewProductType,
+    file?: Express.Multer.File,
+  ) => {
+    const { oldUrlPath } = await modifyProduct(
+      id,
+      { name, description, price, discount, stock, categoryId },
+      file?.path,
+    );
+
+    // delete old product's image
+    if (oldUrlPath) {
+      deleteFile(oldUrlPath);
+    }
   },
 };

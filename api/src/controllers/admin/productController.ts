@@ -55,4 +55,30 @@ export const productController = {
       res.status(200).json({ message: "Deleted product successfully" });
     },
   ],
+  //   Modify product
+  updateProduct: [
+    productValidator.updateProduct,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) {
+        errorResponse(401, errors[0].msg);
+      }
+      const { id } = req.params;
+      const { name, description, price, discount, stock, categoryId } =
+        req.body;
+      await procuctService.updateProduct(
+        Number(id),
+        {
+          name,
+          description,
+          price,
+          discount,
+          stock,
+          categoryId,
+        },
+        req.file,
+      );
+      res.status(201).json({ message: "Updated product data successfully" });
+    },
+  ],
 };

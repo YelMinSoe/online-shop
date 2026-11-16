@@ -32,4 +32,23 @@ export const productValidator = {
       .withMessage("Category name must contain at least one English letter."),
   ],
   deleteProduct: [param("id", "Invalid id").isInt({ min: 1 }).toInt()],
+  updateProduct: [
+    param("id", "Invalid product id").isInt({ min: 1 }).toInt(),
+
+    body("name", "Invalid name")
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 52 }),
+    body("description", "Invalid description")
+      .optional()
+      .trim()
+      .isLength({ min: 1, max: 255 }),
+    body("price", "Invalid price").optional().isFloat({ gt: 0 }).toFloat(),
+    body("discount", "Invalid discount")
+      .optional()
+      .isFloat({ min: 0, max: 100 })
+      .toFloat(),
+    body("stock", "Invalid stock").optional().isInt({ min: 0 }).toInt(),
+    body("categoryId", "Invalid category").optional().isInt({ min: 1 }).toInt(),
+  ],
 };

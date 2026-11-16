@@ -10,5 +10,10 @@ router.post(
 );
 router.post("/create-category", ...productController.createCategory);
 router.delete("/drop-product/:id", ...productController.deleteProduct);
+router.patch(
+  "/modify-product/:id",
+  upload.single("product-image"),
+  ...productController.updateProduct,
+);
 
 export default router;

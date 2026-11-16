@@ -26,15 +26,48 @@ export const findCategoryByName = async (name: string) => {
     where: { name },
   });
 };
-
-// Delete product
-
-export const deleteProduct = async (id: number) => {
-  const product = await prisma.product.findUnique({
+// Find product by Id
+export const findProductById = async (id: number) => {
+  return await prisma.product.findUnique({
     where: { id },
+    include: { images: true },
   });
-  if (!product) {
-    errorResponse(404, "Product not found");
-  }
+};
+// Delete product
+export const removeProduct = async (id: number) => {
   return await prisma.product.delete({ where: { id } });
+};
+
+// Edit product
+export const modifyProduct = async (
+  id: number,
+  productData: any,
+  urlPath?: string,
+) => {
+  const product = await prisma.product.update({
+    where: { id },
+    data: productData,
+  });
+
+  let oldUrlPath: string | undefined;
+
+  if (urlPath) {
+    const oldImage = await prisma.image.findFirst({
+      where: { productId: id },
+    });
+
+    if (oldImage) {
+      await prisma.image.update({
+        where: { id: oldImage.id },
+        data: { urlPath },
+      });
+      oldUrlPath = oldImage.urlPath;
+    } else {
+      await prisma.image.create({
+        data: { urlPath, productId: id },
+      });
+    }
+  }
+
+  return { product, oldUrlPath };
 };
