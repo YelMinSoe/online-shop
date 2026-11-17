@@ -13,11 +13,13 @@ import axios, { isAxiosError } from "@/helpers/axios"
 import { toast } from "react-toastify"
 import { useState } from "react"
 import AdminDashboardModal from "../admin/AdminDashboard"
+import { useCart } from "@/hooks/useCart"
 
 const Desktop = () => {
   const navigate = useNavigate()
   const { email, role, loading, dispatch } = useAuth()
   const [adminOpen, setAdminOpen] = useState(false)
+  const { totalQuantity } = useCart()
 
   const handleLogout = async () => {
     try {
@@ -116,12 +118,17 @@ const Desktop = () => {
             Admin Dashboard
           </Button>
         )}
-        <Button variant="outline" className="relative cursor-pointer">
+        <Button
+          variant="outline"
+          className="relative cursor-pointer"
+          render={<NavLink to="cart" />}
+        >
           <ShoppingCartMinus className="h-5 w-5" />
-
-          <span className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-medium text-white">
-            19
-          </span>
+          {totalQuantity > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-medium text-white">
+              {totalQuantity}
+            </span>
+          )}
         </Button>
         <ModeToggle />
       </ul>

@@ -13,6 +13,7 @@ import ForgotPassword from "@/pages/ForgotPassword"
 import VerifyOtpForgotPassword from "@/pages/VerifyOtpForgotPassword"
 import ForgotPasswordLayout from "@/layouts/ForgotPasswordLayout"
 import ResetPassword from "@/pages/ResetPassword"
+import Cart from "@/pages/Cart"
 
 export const router = createBrowserRouter([
   {
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
           { path: "reset-password", Component: ResetPassword },
         ],
       },
+      { path: "cart", Component: Cart },
     ],
   },
 ])
