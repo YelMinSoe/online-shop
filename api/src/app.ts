@@ -13,6 +13,7 @@ import adminRoutes from "./routes/admin/userRoute.ts";
 import productRoutes from "./routes/admin/productRoute.ts";
 import productRoutesForUser from "./routes/productRoute.ts";
 import addressRoutes from "./routes/address/addressRoute.ts";
+import orderRoutes from "./routes/orders/orderRoute.ts";
 // Auth Middleware
 import { authMiddleware } from "./middlewares/auth.ts";
 import { authorise } from "./middlewares/authorise.ts";
@@ -58,12 +59,15 @@ app.use(
   authorise(true, "ADMIN"),
   productRoutes,
 );
-// Adress routes
-app.use("/api/auth/address", authMiddleware, addressRoutes);
-// Product route (for users)
-app.use("/api/products", productRoutesForUser);
 // Auth Routes
 app.use("/api/auth", authRoutes);
+
+// Adress routes
+app.use("/api/auth/address", authMiddleware, addressRoutes);
+// Order routes
+app.use("/api/auth/orders", authMiddleware, orderRoutes);
+// Product route (for users)
+app.use("/api/products", productRoutesForUser);
 
 // Error Handling
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
