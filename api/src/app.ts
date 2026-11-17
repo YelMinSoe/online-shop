@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoute.ts";
 import adminRoutes from "./routes/admin/userRoute.ts";
 import productRoutes from "./routes/admin/productRoute.ts";
+import productRoutesForUser from "./routes/productRoute.ts";
 // Auth Middleware
 import { authMiddleware } from "./middlewares/auth.ts";
 import { authorise } from "./middlewares/authorise.ts";
@@ -20,7 +21,13 @@ export const app = express();
 
 app
   .use(morgan("dev"))
-  .use(helmet())
+  .use(
+    helmet({
+      crossOriginResourcePolicy: {
+        policy: "cross-origin", //for shown image in frontend
+      },
+    }),
+  )
   .use(express.urlencoded({ extended: true }))
   .use(express.json())
   .use(cors({ origin: "http://localhost:5173", credentials: true }))
@@ -50,6 +57,8 @@ app.use(
   authorise(true, "ADMIN"),
   productRoutes,
 );
+// Product route (for users)
+app.use("/api/products", productRoutesForUser);
 // Auth Routes
 app.use("/api/auth", authRoutes);
 

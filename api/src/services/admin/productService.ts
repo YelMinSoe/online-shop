@@ -5,7 +5,6 @@ import {
   createNewProduct,
   dropCategory,
   findAllCategories,
-  findAllProducts,
   findCategoryById,
   findCategoryByName,
   findProductById,
@@ -55,7 +54,8 @@ export const procuctService = {
     if (categoryRow) {
       errorResponse(409, "Category already exists");
     }
-    await createCategory(name);
+    const category = await createCategory(name);
+    return { category };
   },
 
   //   Delete product
@@ -98,10 +98,10 @@ export const procuctService = {
     }
   },
   // Get all products
-  getAllProducts: async () => {
-    const products = await findAllProducts();
-    return { products };
-  },
+  // getAllProducts: async () => {
+  //   const products = await findAllProducts();
+  //   return { products };
+  // },
   // Get all categories
   getAllCategories: async () => {
     const categories = await findAllCategories();

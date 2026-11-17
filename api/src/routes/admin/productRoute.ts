@@ -15,7 +15,7 @@ router.patch(
   upload.single("product-image"),
   ...productController.updateProduct,
 );
-router.get("/get-all-products", productController.getAllProducts);
+// router.get("/get-all-products", productController.getAllProducts);
 router.get("/get-categories", productController.getAllCategories);
 router.delete("/drop-category/:id", ...productController.deletCategory);
 

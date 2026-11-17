@@ -8,12 +8,15 @@ import { router } from "@/routes/router"
 import "./index.css"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { AuthContextProvider } from "./context/AuthContext"
+import { CartProvider } from "./context/CartContext"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
       <AuthContextProvider>
-        <RouterProvider router={router} />
+        <CartProvider>
+          <RouterProvider router={router} />
+        </CartProvider>
       </AuthContextProvider>
     </ThemeProvider>
   </StrictMode>

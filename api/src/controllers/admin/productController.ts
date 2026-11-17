@@ -38,8 +38,10 @@ export const productController = {
         errorResponse(401, errors[0].msg);
       }
       const { name } = req.body;
-      await procuctService.createCategory(name);
-      res.status(201).json({ message: "Added category succussfully" });
+      const { category } = await procuctService.createCategory(name);
+      res
+        .status(201)
+        .json({ message: "Added category succussfully", category });
     },
   ],
   //   Delete product
@@ -82,10 +84,10 @@ export const productController = {
     },
   ],
   // Get all products
-  getAllProducts: async (req: Request, res: Response, next: NextFunction) => {
-    const { products } = await procuctService.getAllProducts();
-    res.status(200).json({ products });
-  },
+  // getAllProducts: async (req: Request, res: Response, next: NextFunction) => {
+  //   const { products } = await procuctService.getAllProducts();
+  //   res.status(200).json({ products });
+  // },
   // Get all categories
   getAllCategories: async (req: Request, res: Response, next: NextFunction) => {
     const { categories } = await procuctService.getAllCategories();

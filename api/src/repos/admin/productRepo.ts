@@ -73,12 +73,12 @@ export const modifyProduct = async (
 };
 
 // Find all products
-export const findAllProducts = async () => {
-  return await prisma.product.findMany({
-    include: { images: true },
-    orderBy: { createdAt: "desc" },
-  });
-};
+// export const findAllProducts = async () => {
+//   return await prisma.product.findMany({
+//     include: { images: true },
+//     orderBy: { createdAt: "desc" },
+//   });
+// };
 // Find all categories
 export const findAllCategories = async () => {
   return await prisma.category.findMany({

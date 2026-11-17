@@ -79,12 +79,14 @@ const CreateProduct = () => {
     if (!name) return
     setAdding(true)
     try {
-      const res = await axios.post("/api/admin/categories", { name })
+      const res = await axios.post("/api/auth/admin/products/create-category", {
+        name,
+      })
       const created: Category = res.data.category
       setCategories((prev) => [...prev, created])
       setValue("categoryId", created.id)
       setNewCategory("")
-      toast.success("Category added")
+      toast.success(res.data.message)
     } catch (error) {
       toast.error(
         isAxiosError(error)
@@ -124,10 +126,13 @@ const CreateProduct = () => {
     Object.entries(data).forEach(([key, value]) =>
       formData.append(key, String(value))
     )
-    formData.append("image", image)
+    formData.append("product-image", image)
 
     try {
-      const res = await axios.post("/api/admin/products", formData)
+      const res = await axios.post(
+        "/api/auth/admin/products/create-new-product",
+        formData
+      )
       toast.success(res.data.message ?? "Product created successfully")
       reset()
       clearImage()
