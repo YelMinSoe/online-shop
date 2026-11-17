@@ -134,13 +134,13 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     }
   }
 
-  // Order တင် (saved address ကို backend က သုံးမယ်)
+  // place order
   const handlePlaceOrder = async () => {
     if (!saved) return
     setOrdering(true)
     try {
-      const res = await axios.post("/api/orders", {
-        // ဈေး၊ address မပို့ပါ၊ backend က DB ကနေ ယူမယ်
+      const res = await axios.post("/api/auth/orders/place-orders", {
+        // send product ids and quanties
         items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
       })
       toast.success(res.data.message ?? "Order placed successfully")
