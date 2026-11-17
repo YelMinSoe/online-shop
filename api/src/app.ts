@@ -12,6 +12,7 @@ import authRoutes from "./routes/authRoute.ts";
 import adminRoutes from "./routes/admin/userRoute.ts";
 import productRoutes from "./routes/admin/productRoute.ts";
 import productRoutesForUser from "./routes/productRoute.ts";
+import addressRoutes from "./routes/address/addressRoute.ts";
 // Auth Middleware
 import { authMiddleware } from "./middlewares/auth.ts";
 import { authorise } from "./middlewares/authorise.ts";
@@ -50,13 +51,15 @@ app.use(
   authorise(true, "ADMIN"),
   adminRoutes,
 );
-// Admin routes (users)
+// Prouduct routes (users)
 app.use(
   "/api/auth/admin/products",
   authMiddleware,
   authorise(true, "ADMIN"),
   productRoutes,
 );
+// Adress routes
+app.use("/api/auth/address", authMiddleware, addressRoutes);
 // Product route (for users)
 app.use("/api/products", productRoutesForUser);
 // Auth Routes

@@ -39,8 +39,6 @@ const ProductCard = ({ product }: { product: Product }) => {
             className={`h-full w-full object-cover transition duration-300 group-hover:scale-105 ${
               outOfStock ? "opacity-50 grayscale" : ""
             }`}
-            onLoad={() => console.log("IMAGE LOADED:", imageUrl)}
-            onError={() => console.log("IMAGE FAILED:", imageUrl)}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">

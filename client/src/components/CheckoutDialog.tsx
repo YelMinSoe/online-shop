@@ -3,7 +3,7 @@ import { useNavigate } from "react-router"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Loader2 } from "lucide-react"
+import { Loader2, MapPin, Pencil } from "lucide-react"
 import { toast } from "react-toastify"
 import axios, { isAxiosError } from "@/helpers/axios"
 import { Button } from "@/components/ui/button"
@@ -40,8 +40,10 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
+const EMPTY: FormData = { name: "", phone: "", postalCode: "", address: "" }
+
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 "
+  "w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600"
 
 const FieldError = ({ message }: { message?: string }) =>
   message ? <p className="text-sm font-bold text-red-500">{message}</p> : null
@@ -54,8 +56,12 @@ type Props = {
 const CheckoutDialog = ({ open, onOpenChange }: Props) => {
   const { items, totalPrice, clear } = useCart()
   const navigate = useNavigate()
+
+  const [saved, setSaved] = useState<FormData | null>(null) // DB ထဲက address
+  const [editing, setEditing] = useState(false)
   const [loadingAddress, setLoadingAddress] = useState(false)
   const [searching, setSearching] = useState(false)
+  const [ordering, setOrdering] = useState(false)
 
   const {
     register,
@@ -66,22 +72,38 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", phone: "", postalCode: "", address: "" },
+    defaultValues: EMPTY,
   })
 
-  // Dialog ဖွင့်တိုင်း saved address ကို ကြိုဖြည့်
+  const busy = isSubmitting || ordering
+
+  // Dialog ဖွင့်တိုင်း saved address ကို ယူ
   useEffect(() => {
     if (!open) return
     const loadAddress = async () => {
       setLoadingAddress(true)
       try {
-        const res = await axios.get("/api/address")
-        if (res.data.address) {
-          const { name, phone, postalCode, address } = res.data.address
-          reset({ name, phone, postalCode, address })
+        const res = await axios.get("/api/auth/address/get-address")
+        const a = res.data.address
+        if (a) {
+          const value: FormData = {
+            name: a.name,
+            phone: a.phone,
+            postalCode: a.postalCode,
+            address: a.address,
+          }
+          setSaved(value)
+          reset(value)
+          setEditing(false) // ရှိရင် summary ကို အရင်ပြ
+        } else {
+          setSaved(null)
+          reset(EMPTY)
+          setEditing(true) // မရှိရင် form ကို တန်းပြ
         }
       } catch {
-        // address မရှိတာ/ဖတ်မရတာ ပုံမှန်၊ form ဗလာနဲ့ ဆက်သွား
+        setSaved(null)
+        reset(EMPTY)
+        setEditing(true)
       } finally {
         setLoadingAddress(false)
       }
@@ -89,12 +111,37 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     loadAddress()
   }, [open, reset])
 
-  const onSubmit = async (address: FormData) => {
+  // Save Address
+  const onSaveAddress = async (data: FormData) => {
+    try {
+      // if address already exist, updated it
+      if (saved) {
+        await axios.patch("/api/auth/address/modify-address", data)
+      } else {
+        // or create new address
+        await axios.post("/api/auth/address/create-new-address", data)
+      }
+      setSaved(data)
+      reset(data)
+      setEditing(false)
+      toast.success("Address saved")
+    } catch (error) {
+      toast.error(
+        isAxiosError(error)
+          ? (error.response?.data?.message ?? "Failed to save address")
+          : "An unexpected error occurred"
+      )
+    }
+  }
+
+  // Order တင် (saved address ကို backend က သုံးမယ်)
+  const handlePlaceOrder = async () => {
+    if (!saved) return
+    setOrdering(true)
     try {
       const res = await axios.post("/api/orders", {
-        // ဈေး မပို့ပါ၊ backend က DB ကနေ တွက်မယ်
+        // ဈေး၊ address မပို့ပါ၊ backend က DB ကနေ ယူမယ်
         items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
-        address,
       })
       toast.success(res.data.message ?? "Order placed successfully")
       clear()
@@ -106,10 +153,12 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
           ? (error.response?.data?.message ?? "Failed to place order")
           : "An unexpected error occurred"
       )
+    } finally {
+      setOrdering(false)
     }
   }
 
-  //   auto fill address by postal code
+  // Postal code နဲ့ address auto fill
   const handleSearch = async () => {
     setSearching(true)
     const result = await lookupPostal(getValues("postalCode"))
@@ -117,9 +166,16 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     if (!result)
       return toast.error("Address not found. Please enter it manually.")
 
-    // ကိုယ်တိုင်ရိုက်ထားပြီးသားကို မထပ်ရေးဖို့
-    if (!getValues("address")) {
-      setValue("address", result, { shouldValidate: true })
+    // Search ကိုယ်တိုင်နှိပ်တာမို့ အစားထိုး၊ အိမ်နံပါတ်ကို ဆက်ရိုက်ပါ
+    setValue("address", result, { shouldValidate: true })
+  }
+
+  const handleCancelEdit = () => {
+    if (saved) {
+      reset(saved) // မသိမ်းဘဲ ပယ်၊ အရင်တန်ဖိုးပြန်
+      setEditing(false)
+    } else {
+      onOpenChange(false)
     }
   }
 
@@ -127,14 +183,16 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     <Dialog
       open={open}
       onOpenChange={(o) => {
-        if (!isSubmitting) onOpenChange(o)
+        if (!busy) onOpenChange(o)
       }}
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Delivery address</DialogTitle>
           <DialogDescription>
-            Where should we send your order?
+            {editing
+              ? "Enter where we should send your order."
+              : "Check your address before placing the order."}
           </DialogDescription>
         </DialogHeader>
 
@@ -142,9 +200,10 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
           <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading...
           </div>
-        ) : (
+        ) : editing ? (
+          /* ---------- Edit / Create form ---------- */
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSaveAddress)}
             className="flex flex-col gap-4"
           >
             <div className="flex flex-col gap-1.5">
@@ -160,28 +219,26 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
                   {...register("phone")}
                   inputMode="tel"
                   maxLength={15}
-                  placeholder="08xxxxxxxxx"
+                  placeholder="08012345678"
                   className={inputClass}
                 />
                 <FieldError message={errors.phone?.message} />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center lg:justify-between">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium">Postal code</label>
 
-                    <input
-                      {...register("postalCode")}
-                      maxLength={8}
-                      className={inputClass}
-                    />
-                  </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Postal code</label>
+                <div className="flex gap-2">
+                  <input
+                    {...register("postalCode")}
+                    maxLength={8}
+                    placeholder="100-0001"
+                    className={inputClass}
+                  />
                   <Button
                     type="button"
-                    variant="default"
                     disabled={searching}
                     onClick={handleSearch}
-                    className="mt-6 ml-2 h-9 cursor-pointer"
+                    className="cursor-pointer"
                   >
                     {searching ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -205,20 +262,13 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
               <FieldError message={errors.address?.message} />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg bg-purple-50 px-4 py-3 dark:bg-purple-950">
-              <span className="text-md font-bold">Total</span>
-              <span className="text-lg font-bold">
-                {totalPrice.toLocaleString()} MMK
-              </span>
-            </div>
-
             <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 className="flex-1 cursor-pointer"
-                onClick={() => onOpenChange(false)}
+                onClick={handleCancelEdit}
               >
                 Cancel
               </Button>
@@ -230,6 +280,64 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save address"
+                )}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          /* ---------- Summary + Place order ---------- */
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-3 rounded-lg border p-4">
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-purple-600 dark:text-purple-400" />
+              <div className="flex-1 text-sm">
+                <p className="font-semibold">{saved?.name}</p>
+                <p className="text-muted-foreground">{saved?.phone}</p>
+                <p className="mt-1">〒{saved?.postalCode}</p>
+                <p className="wrap-break-word">{saved?.address}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={ordering}
+                onClick={() => setEditing(true)}
+                className="cursor-pointer"
+              >
+                <Pencil className="mr-1 h-3 w-3" />
+                Change
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg bg-purple-50 px-4 py-3 dark:bg-purple-950">
+              <span className="text-md font-bold">Total</span>
+              <span className="text-lg font-bold">
+                {totalPrice.toLocaleString()} MMK
+              </span>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={ordering}
+                className="flex-1 cursor-pointer"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={ordering}
+                onClick={handlePlaceOrder}
+                className="flex-1 cursor-pointer"
+              >
+                {ordering ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Placing...
                   </>
                 ) : (
@@ -237,7 +345,7 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
                 )}
               </Button>
             </div>
-          </form>
+          </div>
         )}
       </DialogContent>
     </Dialog>
