@@ -1,4 +1,5 @@
 import { ImageOff, ShoppingCart } from "lucide-react"
+import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/useCart"
 
@@ -28,7 +29,8 @@ const ProductCard = ({ product }: { product: Product }) => {
   const lowStock = product.stock > 0 && product.stock <= 5
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    // relative: ဖုံးထားတဲ့ link ရဲ့ အကျယ်အဝန်းကို card ကန့်သတ်ဖို့
+    <div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-muted">
         {imageUrl ? (
@@ -60,7 +62,15 @@ const ProductCard = ({ product }: { product: Product }) => {
 
       {/* Info */}
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-1 text-lg font-semibold">{product.name}</h3>
+        <h3 className="line-clamp-1 text-lg font-semibold">
+          {/* after:absolute after:inset-0 ဆိုတာ card တစ်ခုလုံးကို နှိပ်လို့ရအောင် ချဲ့တာ */}
+          <Link
+            to={`/products/${product.id}`}
+            className="after:absolute after:inset-0 after:content-['']"
+          >
+            {product.name}
+          </Link>
+        </h3>
         <p className="line-clamp-2 text-sm text-muted-foreground">
           {product.description}
         </p>
@@ -94,8 +104,9 @@ const ProductCard = ({ product }: { product: Product }) => {
               : `${product.stock} in stock`}
         </p>
 
+        {/* relative z-10: ဖုံးထားတဲ့ link အပေါ်မှာ ရှိအောင်၊ ဒါမှ button ကိုနှိပ်ရင် cart ထဲပဲ ထည့် */}
         <Button
-          className="mt-auto w-full cursor-pointer"
+          className="relative z-10 mt-auto w-full cursor-pointer"
           disabled={outOfStock}
           onClick={() =>
             addToCart({

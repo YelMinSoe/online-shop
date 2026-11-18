@@ -14,6 +14,7 @@ import VerifyOtpForgotPassword from "@/pages/VerifyOtpForgotPassword"
 import ForgotPasswordLayout from "@/layouts/ForgotPasswordLayout"
 import ResetPassword from "@/pages/ResetPassword"
 import Cart from "@/pages/Cart"
+import ProductDetails from "@/pages/ProductDetails"
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +22,11 @@ export const router = createBrowserRouter([
     Component: RootLayout,
     children: [
       { index: true, Component: Home },
-      { path: "products", Component: Products },
+      {
+        path: "products",
+        Component: Products,
+      },
+      { path: "products/:id", Component: ProductDetails },
       { path: "about", Component: About },
       {
         path: "register",
