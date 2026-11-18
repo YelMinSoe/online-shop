@@ -58,4 +58,9 @@ export const orderService = {
     );
     return { order };
   },
+  // get order by user id
+  getMyOrders: async (userId: number) => {
+    const orders = await orderRepo.findOrdersByUserId(userId);
+    return { orders };
+  },
 };

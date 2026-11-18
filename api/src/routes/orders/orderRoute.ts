@@ -9,5 +9,5 @@ router.post(
   uploadSlip.single("paymentSlip"),
   ...orderController.createOrder,
 );
-
+router.get("/get-my-orders", orderController.getMyOrders);
 export default router;

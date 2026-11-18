@@ -36,4 +36,8 @@ export const orderController = {
       }
     },
   ],
+  getMyOrders: async (req: CustomRequest, res: Response) => {
+    const { orders } = await orderService.getMyOrders(req.userId!);
+    res.status(200).json({ orders });
+  },
 };

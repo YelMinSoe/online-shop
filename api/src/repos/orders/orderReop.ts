@@ -42,4 +42,28 @@ export const orderRepo = {
   findProductsByIds: async (ids: number[]) => {
     return await prisma.product.findMany({ where: { id: { in: ids } } });
   },
+
+  // get orders by user's id
+  findOrdersByUserId: async (userId: number) => {
+    return await prisma.order.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        code: true,
+        totalPrice: true,
+        status: true,
+        createdAt: true,
+        products: {
+          select: {
+            id: true,
+            quantity: true,
+            price: true,
+            product: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+  },
 };
