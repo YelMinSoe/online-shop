@@ -67,11 +67,11 @@ const ProductCard = ({ product }: { product: Product }) => {
 
         {/* Price */}
         <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+          <span className="text-xl font-bold text-green-600">
             {finalPrice.toLocaleString()} MMK
           </span>
           {hasDiscount && (
-            <span className="text-sm text-muted-foreground line-through">
+            <span className="text-sm text-red-600 line-through">
               {price.toLocaleString()}
             </span>
           )}

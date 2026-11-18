@@ -120,7 +120,7 @@ const Cart = () => {
         </div>
         <div className="mt-3 flex items-baseline justify-between border-t pt-3">
           <span className="font-medium">Total</span>
-          <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <span className="text-2xl font-bold text-red-500">
             {totalPrice.toLocaleString()} MMK
           </span>
         </div>

@@ -377,7 +377,7 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
           /* ---------- Summary + Place order ---------- */
           <div className="flex flex-col gap-4">
             <div className="flex items-start gap-3 rounded-lg border p-4">
-              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-purple-600 dark:text-purple-400" />
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="flex-1 text-sm">
                 <p className="font-semibold">{saved?.name}</p>
                 <p className="text-muted-foreground">{saved?.phone}</p>
@@ -397,9 +397,9 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
               </Button>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg bg-purple-50 px-4 py-3 dark:bg-purple-950">
+            <div className="flex items-center justify-between rounded-lg px-4 py-3">
               <span className="text-md font-bold">Total</span>
-              <span className="text-lg font-bold">
+              <span className="text-lg font-bold text-red-500">
                 {totalPrice.toLocaleString()} MMK
               </span>
             </div>

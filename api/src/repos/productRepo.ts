@@ -7,3 +7,11 @@ export const findAllProducts = async () => {
     orderBy: { createdAt: "desc" },
   });
 };
+
+// find product by id
+export const findProductById = async (id: number) => {
+  return await prisma.product.findUnique({
+    where: { id },
+    include: { images: true, category: true },
+  });
+};
