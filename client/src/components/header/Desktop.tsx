@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { NavLink, useNavigate } from "react-router"
+import { Link, NavLink, useNavigate } from "react-router"
 import { ModeToggle } from "../mode-toggle"
 import {
   LayoutDashboard,
@@ -7,6 +7,7 @@ import {
   LogOut,
   ShoppingCartMinus,
   Store,
+  User,
   UserPlus,
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
@@ -75,7 +76,13 @@ const Desktop = () => {
         {email ? (
           <>
             <li>
-              <p className="text-lg font-medium">{email}</p>
+              <Link
+                to="/profile"
+                className="flex max-w-50 items-center gap-2 rounded-md px-2 py-1 text-lg font-medium transition hover:bg-muted"
+              >
+                <User className="h-4 w-4 shrink-0" />
+                <span className="truncate">{email}</span>
+              </Link>
             </li>
             <li>
               <Button

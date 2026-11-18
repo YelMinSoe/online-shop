@@ -15,6 +15,7 @@ import ForgotPasswordLayout from "@/layouts/ForgotPasswordLayout"
 import ResetPassword from "@/pages/ResetPassword"
 import Cart from "@/pages/Cart"
 import ProductDetails from "@/pages/ProductDetails"
+import Profile from "@/pages/Profile"
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
         ],
       },
       { path: "cart", Component: Cart },
+      { path: "profile", Component: Profile },
     ],
   },
 ])
