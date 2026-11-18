@@ -19,6 +19,7 @@ import {
   Menu,
   Package2,
   ShoppingCartMinus,
+  Store,
   UserPlus,
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
@@ -51,7 +52,10 @@ const Mobile = () => {
   return (
     <div className="flex h-full items-center justify-between gap-8 xl:hidden">
       <NavLink to="/">
-        <h1 className="ml-5 text-xl font-semibold">Team Hex Shop</h1>
+        <div className="flex items-center justify-center">
+          <Store className="ml-2 size-6" />
+          <h1 className="ml-2 text-xl font-semibold">Team Hex Shop</h1>
+        </div>
       </NavLink>
       <div className="flex items-center gap-3">
         <Button

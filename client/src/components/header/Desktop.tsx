@@ -6,6 +6,7 @@ import {
   LogIn,
   LogOut,
   ShoppingCartMinus,
+  Store,
   UserPlus,
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
@@ -38,7 +39,10 @@ const Desktop = () => {
   return (
     <div className="hidden h-full items-center justify-between px-10 xl:flex">
       <NavLink to="/">
-        <h1 className="ml-4 text-2xl font-bold">Team Hex Shop</h1>
+        <div className="flex items-center justify-center">
+          <Store className="size-8" />
+          <h1 className="ml-2 text-2xl font-bold">Team Hex Shop</h1>
+        </div>
       </NavLink>
       <ul className="flex gap-10 text-lg font-semibold">
         <NavLink

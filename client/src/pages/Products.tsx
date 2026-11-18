@@ -5,25 +5,46 @@ import { toast } from "react-toastify"
 import axios, { isAxiosError } from "@/helpers/axios"
 import ProductCard, { type Product } from "@/components/ProductCard"
 import Pagination from "@/components/Pagination"
+import CategoryFilter from "@/components/CategoryFilter"
 
-const LIMIT = 12 // 2၊ 3၊ 4 ကော်လံ အားလုံးနဲ့ အပြည့်ကိုက်
+const LIMIT = 12
+
+type Category = { id: number; name: string }
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Math.max(1, Number(searchParams.get("page")) || 1)
+  const categoryParam = Number(searchParams.get("category"))
+  const categoryId = categoryParam > 0 ? categoryParam : null
 
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
 
+  // Category စာရင်း (တစ်ခါပဲ)
   useEffect(() => {
-    let ignore = false // page မြန်မြန်ပြောင်းရင် response အဟောင်းက အသစ်ကို မဖြတ်ရေးအောင်
+    axios
+      .get("/api/categories/get-categories")
+      .then((res) => {
+        console.log(res.data)
+        setCategories(res.data.categories ?? [])
+      })
+      .catch(() => {
+        // filter မပေါ်ရုံပဲ၊ product စာရင်းကို မထိခိုက်
+        console.log("Error is found here")
+      })
+  }, [])
+
+  // Product စာရင်း (page သို့ category ပြောင်းတိုင်း)
+  useEffect(() => {
+    let ignore = false
 
     const fetchProducts = async () => {
       setLoading(true)
       try {
         const res = await axios.get("/api/products/get-all-products", {
-          params: { page, limit: LIMIT },
+          params: { page, limit: LIMIT, categoryId: categoryId ?? undefined },
         })
         if (ignore) return
         setProducts(res.data.products)
@@ -44,49 +65,67 @@ const Products = () => {
     return () => {
       ignore = true
     }
-  }, [page])
+  }, [page, categoryId])
 
-  // ?page=999 လို့ ရိုက်ရင် နောက်ဆုံး page ကို ပြန်ပို့
+  // URL မှာ page က နောက်ဆုံးထက်ကျော်နေရင် ပြန်ပို့
   useEffect(() => {
     if (!loading && page > totalPages) {
-      setSearchParams({ page: String(totalPages) }, { replace: true })
+      // eslint-disable-next-line react-hooks/immutability
+      updateParams(categoryId, totalPages, true)
     }
-  }, [loading, page, totalPages, setSearchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, page, totalPages])
 
-  const goToPage = (p: number) => {
-    setSearchParams({ page: String(p) })
+  const updateParams = (cat: number | null, p: number, replace = false) => {
+    const next = new URLSearchParams()
+    if (cat) next.set("category", String(cat))
+    if (p > 1) next.set("page", String(p))
+    setSearchParams(next, { replace })
+  }
+
+  const handleCategory = (id: number | null) => updateParams(id, 1) // page ကို 1 ပြန်ထား
+  const handlePage = (p: number) => {
+    updateParams(categoryId, p)
     window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
-  if (loading && products.length === 0) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center gap-2 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" /> Loading products...
-      </div>
-    )
-  }
-
-  if (!loading && products.length === 0) {
-    return (
-      <p className="py-20 text-center text-muted-foreground">No products yet</p>
-    )
   }
 
   return (
     <div className="mx-auto max-w-7xl p-3 sm:p-6">
-      <div
-        className={`grid grid-cols-2 gap-3 transition-opacity sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 ${
-          loading ? "opacity-50" : ""
-        }`}
-      >
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </div>
+      <CategoryFilter
+        categories={categories}
+        selected={categoryId}
+        onChange={handleCategory}
+      />
 
-      <div className="mt-8">
-        <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
-      </div>
+      {loading && products.length === 0 ? (
+        <div className="flex min-h-[40vh] items-center justify-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" /> Loading products...
+        </div>
+      ) : !loading && products.length === 0 ? (
+        <p className="py-20 text-center text-muted-foreground">
+          {categoryId ? "No products in this category" : "No products yet"}
+        </p>
+      ) : (
+        <>
+          <div
+            className={`grid grid-cols-2 gap-3 transition-opacity sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 ${
+              loading ? "opacity-50" : ""
+            }`}
+          >
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+
+          <div className="mt-8">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onChange={handlePage}
+            />
+          </div>
+        </>
+      )}
     </div>
   )
 }
