@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma.ts";
 
 // Find all products
-export const findProducts = async (
+export const findAllProducts = async (
   page: number,
   limit: number,
   categoryId?: number,
@@ -16,9 +16,8 @@ export const findProducts = async (
       skip: (page - 1) * limit,
       take: limit,
     }),
-    prisma.product.count({ where }),
+    prisma.product.count({ where }), // total ကိုလည်း filter နဲ့ တူအောင်
   ]);
-
   return { products, total };
 };
 

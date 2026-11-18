@@ -1,8 +1,12 @@
-import { findProducts, findProductById } from "../repos/productRepo.ts";
+import { findAllProducts, findProductById } from "../repos/productRepo.ts";
 import { errorResponse } from "../utils/errorResponse.ts";
 
-export const getAllProducts = async (page: number, limit: number) => {
-  const { products, total } = await findProducts(page, limit);
+export const getAllProducts = async (
+  page: number,
+  limit: number,
+  categoryId?: number,
+) => {
+  const { products, total } = await findAllProducts(page, limit, categoryId);
   const totalPages = Math.max(1, Math.ceil(total / limit));
   return { products, total, page, totalPages };
 };

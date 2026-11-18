@@ -9,10 +9,15 @@ export const productController = {
   getProducts: [
     pagination,
     async (req: Request, res: Response, next: NextFunction) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) errorResponse(400, errors[0].msg);
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 12;
+      const categoryId = req.query.categoryId
+        ? Number(req.query.categoryId)
+        : undefined;
 
-      const result = await getAllProducts(page, limit);
+      const result = await getAllProducts(page, limit, categoryId);
       res.status(200).json(result);
     },
   ],
