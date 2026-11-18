@@ -81,7 +81,7 @@ const VerifyOtp = () => {
         <Button
           type="submit"
           variant="default"
-          className="w-full md:h-11 md:text-base lg:h-14 lg:text-lg"
+          className="w-full cursor-pointer md:h-11 md:text-base lg:h-14 lg:text-lg"
         >
           Submit
         </Button>

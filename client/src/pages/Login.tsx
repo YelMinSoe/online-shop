@@ -144,7 +144,7 @@ const Login = () => {
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="font-medium text-blue-500 hover:underline"
+            className="cursor-pointer font-medium text-blue-500 hover:underline"
           >
             Register
           </Link>

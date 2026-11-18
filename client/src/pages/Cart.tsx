@@ -102,7 +102,7 @@ const Cart = () => {
                   </button>
                 </div>
                 <p className="font-bold">
-                  {(item.price * item.quantity).toLocaleString()} MMK
+                  {`¥ ${(item.price * item.quantity).toLocaleString()}`}
                 </p>
               </div>
             </div>
@@ -121,7 +121,7 @@ const Cart = () => {
         <div className="mt-3 flex items-baseline justify-between border-t pt-3">
           <span className="font-medium">Total</span>
           <span className="text-2xl font-bold text-red-500">
-            {totalPrice.toLocaleString()} MMK
+            {`¥ ${totalPrice.toLocaleString()}`}
           </span>
         </div>
 

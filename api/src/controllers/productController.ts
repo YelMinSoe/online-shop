@@ -3,12 +3,19 @@ import { getAllProducts, getProduct } from "../services/productService.ts";
 import { validationResult } from "express-validator";
 import { errorResponse } from "../utils/errorResponse.ts";
 import { productValidator } from "../middlewares/validators/admin/productValidator.ts";
+import { pagination } from "../middlewares/pagination.ts";
 
 export const productController = {
-  getProducts: async (req: Request, res: Response, next: NextFunction) => {
-    const { products } = await getAllProducts();
-    res.status(200).json({ products });
-  },
+  getProducts: [
+    pagination,
+    async (req: Request, res: Response, next: NextFunction) => {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 12;
+
+      const result = await getAllProducts(page, limit);
+      res.status(200).json(result);
+    },
+  ],
   getProductById: [
     productValidator.deleteProduct, // id validator due to I don't write it agian
     async (req: Request, res: Response) => {

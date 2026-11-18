@@ -1,11 +1,25 @@
 import { prisma } from "../lib/prisma.ts";
 
 // Find all products
-export const findAllProducts = async () => {
-  return await prisma.product.findMany({
-    include: { images: true },
-    orderBy: { createdAt: "desc" },
-  });
+export const findProducts = async (
+  page: number,
+  limit: number,
+  categoryId?: number,
+) => {
+  const where = categoryId ? { categoryId } : {};
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: { images: true },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  return { products, total };
 };
 
 // find product by id

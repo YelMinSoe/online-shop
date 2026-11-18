@@ -90,7 +90,7 @@ const ProductDetails = () => {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Images */}
-        <div className="flex flex-col gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           <div className="relative aspect-square overflow-hidden rounded-2xl border bg-muted">
             {imageUrls[active] ? (
               <img
@@ -142,14 +142,14 @@ const ProductDetails = () => {
         </div>
 
         {/* Info */}
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           {product.category && (
             <span className="w-fit rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700 dark:bg-purple-950 dark:text-purple-300">
               {product.category.name.toLocaleUpperCase()}
             </span>
           )}
 
-          <h1 className="text-2xl font-bold wrap-break-word lg:text-3xl">
+          <h1 className="text-2xl font-bold wrap-anywhere lg:text-3xl">
             {product.name}
           </h1>
 
@@ -187,7 +187,7 @@ const ProductDetails = () => {
 
           <div className="border-t pt-4">
             <h2 className="mb-2 font-semibold">Description</h2>
-            <p className="text-sm leading-relaxed wrap-break-word whitespace-pre-line text-muted-foreground">
+            <p className="text-sm leading-relaxed wrap-anywhere whitespace-pre-line text-muted-foreground">
               {product.description}
             </p>
           </div>
