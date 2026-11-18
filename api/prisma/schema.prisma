@@ -51,14 +51,18 @@ model Product {
 }
 
 model Order {
-  id         Int              @id @default(autoincrement())
-  code       String           @db.VarChar(7)
-  totalPrice Decimal          @default(0) @db.Decimal(10, 2)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  userId     Int
-  user       User             @relation(fields: [userId], references: [id])
-  products   ProductOnOrder[]
+  id          Int              @id @default(autoincrement())
+  code        String           @db.VarChar(7)
+  totalPrice  Decimal          @default(0) @db.Decimal(10, 2)
+  status      OrderStatus      @default(PENDING)
+  paymentSlip String?          @db.VarChar(255)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  userId      Int
+  user        User             @relation(fields: [userId], references: [id])
+  products    ProductOnOrder[]
+
+  @@index([status])
 }
 
 model ProductOnOrder {
@@ -105,4 +109,9 @@ enum Status {
 enum Role {
   ADMIN
   CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  SENT
 }

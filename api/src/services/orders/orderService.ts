@@ -7,7 +7,11 @@ import { codeGenerator } from "../../utils/generate.ts";
 type OrderItem = { productId: number; quantity: number };
 export const orderService = {
   // Create new order
-  createOrder: async (userId: number, items: OrderItem[]) => {
+  createOrder: async (
+    userId: number,
+    items: OrderItem[],
+    paymentSlip: string,
+  ) => {
     // check address (optional)
     const address = await addressRepo.findAddressByUserId(userId);
     if (!address) {
@@ -50,6 +54,7 @@ export const orderService = {
       code,
       totalPrice,
       orderLines,
+      paymentSlip,
     );
     return { order };
   },

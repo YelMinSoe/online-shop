@@ -11,6 +11,7 @@ export const orderRepo = {
     code: string,
     totalPrice: number,
     lines: OrderLine[],
+    paymentSlip: string,
   ) => {
     return await prisma.$transaction(async (tx) => {
       // protect from enough stock
@@ -29,6 +30,7 @@ export const orderRepo = {
         data: {
           code,
           totalPrice,
+          paymentSlip,
           userId,
           products: { create: lines },
         },

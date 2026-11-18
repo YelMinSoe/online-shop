@@ -3,7 +3,7 @@ import { useNavigate } from "react-router"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Loader2, MapPin, Pencil } from "lucide-react"
+import { ImagePlus, Loader2, MapPin, Pencil, X } from "lucide-react"
 import { toast } from "react-toastify"
 import axios, { isAxiosError } from "@/helpers/axios"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { useCart } from "@/hooks/useCart"
 import { lookupPostal } from "@/helpers/lookupPostal"
+import ImageViewer from "./ImageViewer"
 
 const schema = z.object({
   name: z
@@ -57,11 +58,16 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
   const { items, totalPrice, clear } = useCart()
   const navigate = useNavigate()
 
-  const [saved, setSaved] = useState<FormData | null>(null) // DB ထဲက address
+  const [saved, setSaved] = useState<FormData | null>(null) // address from db
   const [editing, setEditing] = useState(false)
   const [loadingAddress, setLoadingAddress] = useState(false)
   const [searching, setSearching] = useState(false)
   const [ordering, setOrdering] = useState(false)
+  // Payment slip
+  const [slip, setSlip] = useState<File | null>(null)
+  const [slipPreview, setSlipPreview] = useState<string | null>(null)
+  // Image viewer
+  const [viewerOpen, setViewerOpen] = useState(false)
 
   const {
     register,
@@ -111,6 +117,26 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     loadAddress()
   }, [open, reset])
 
+  // Payment slip function and clear it
+  const handleSlip = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    if (!file.type.startsWith("image/"))
+      return toast.error("Please select an image")
+    if (file.size > 5 * 1024 * 1024)
+      return toast.error("Image must be under 5MB")
+
+    if (slipPreview) URL.revokeObjectURL(slipPreview)
+    setSlip(file)
+    setSlipPreview(URL.createObjectURL(file))
+  }
+  // clear slip
+  const clearSlip = () => {
+    if (slipPreview) URL.revokeObjectURL(slipPreview)
+    setSlip(null)
+    setSlipPreview(null)
+  }
   // Save Address
   const onSaveAddress = async (data: FormData) => {
     try {
@@ -137,12 +163,19 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
   // place order
   const handlePlaceOrder = async () => {
     if (!saved) return
+    if (!slip) return toast.error("Please upload your payment slip")
     setOrdering(true)
     try {
-      const res = await axios.post("/api/auth/orders/place-orders", {
-        // send product ids and quanties
-        items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
-      })
+      const formData = new FormData()
+      formData.append(
+        "items",
+        JSON.stringify(
+          items.map((i) => ({ productId: i.id, quantity: i.quantity }))
+        )
+      )
+      formData.append("paymentSlip", slip)
+
+      const res = await axios.post("/api/auth/orders/place-orders", formData)
       toast.success(res.data.message ?? "Order placed successfully")
       clear()
       onOpenChange(false)
@@ -166,13 +199,13 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
     if (!result)
       return toast.error("Address not found. Please enter it manually.")
 
-    // Search ကိုယ်တိုင်နှိပ်တာမို့ အစားထိုး၊ အိမ်နံပါတ်ကို ဆက်ရိုက်ပါ
+    // continue input for next address
     setValue("address", result, { shouldValidate: true })
   }
 
   const handleCancelEdit = () => {
     if (saved) {
-      reset(saved) // မသိမ်းဘဲ ပယ်၊ အရင်တန်ဖိုးပြန်
+      reset(saved) // save old address
       setEditing(false)
     } else {
       onOpenChange(false)
@@ -195,6 +228,58 @@ const CheckoutDialog = ({ open, onOpenChange }: Props) => {
               : "Check your address before placing the order."}
           </DialogDescription>
         </DialogHeader>
+        {/* Image viewer */}
+        <ImageViewer
+          src={viewerOpen ? slipPreview : null}
+          alt="Payment slip"
+          onClose={() => setViewerOpen(false)}
+        />
+        {/* Payment slip */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium">
+            Payment slip <span className="text-red-500">*</span>
+          </label>
+
+          {slipPreview ? (
+            <div className="relative h-40 overflow-hidden rounded-lg border bg-muted">
+              <button
+                type="button"
+                onClick={() => setViewerOpen(true)}
+                aria-label="View full image"
+                className="h-full w-full cursor-zoom-in"
+              >
+                <img
+                  src={slipPreview}
+                  alt="Payment slip"
+                  className="h-full w-full object-contain"
+                />
+              </button>
+              <button
+                type="button"
+                onClick={clearSlip}
+                disabled={ordering}
+                aria-label="Remove slip"
+                className="absolute top-2 right-2 cursor-pointer rounded-full bg-black/60 p-1.5 text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed px-4 py-6 text-center transition hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30">
+              <ImagePlus className="h-6 w-6 text-muted-foreground" />
+              <span className="text-sm font-medium">Upload payment slip</span>
+              <span className="text-xs text-muted-foreground">
+                PNG, JPG · up to 5MB
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleSlip}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
 
         {loadingAddress ? (
           <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
