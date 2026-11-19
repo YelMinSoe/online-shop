@@ -126,7 +126,7 @@ export type CartContextType = {
   items: CartItem[]
   totalQuantity: number
   totalPrice: number
-  addToCart: (item: Omit<CartItem, "quantity">) => void
+  addToCart: (item: Omit<CartItem, "quantity">) => boolean
   increase: (id: number) => void
   decrease: (id: number) => void
   remove: (id: number) => void
@@ -173,12 +173,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [items, KEY, loadedKey])
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
+  const addToCart = (item: Omit<CartItem, "quantity">): boolean => {
     const existing = items.find((i) => i.id === item.id)
 
     if (existing && existing.quantity >= item.stock) {
       toast.error("No more stock available")
-      return
+      return false // ← ထည့်မရဘူး
     }
 
     if (existing) {
@@ -190,7 +190,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setItems([...items, { ...item, quantity: 1 }])
     }
+
     toast.success("Added to cart")
+    return true // ← ထည့်ပြီးပြီ
   }
 
   const increase = (id: number) =>

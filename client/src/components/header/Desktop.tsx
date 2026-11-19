@@ -131,6 +131,7 @@ const Desktop = () => {
         )}
         <Button
           variant="outline"
+          data-cart-target
           className="relative cursor-pointer"
           render={<NavLink to="cart" />}
         >

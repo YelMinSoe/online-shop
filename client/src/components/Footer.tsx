@@ -1,5 +1,5 @@
 import { Link } from "react-router"
-import { ShoppingBag } from "lucide-react"
+import { Store } from "lucide-react"
 
 const LINKS = [
   { to: "/", label: "Home" },
@@ -9,12 +9,14 @@ const LINKS = [
 ]
 
 const Footer = () => (
-  <footer className="mt-12 border-t bg-card">
+  <footer className="border-t bg-card">
     <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 px-4 py-8 sm:flex-row sm:justify-between sm:px-6">
       <div className="flex flex-col items-center gap-1 sm:items-start">
         <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-          <ShoppingBag className="h-5 w-5 text-purple-600" />
-          Team Hex Shop
+          <div className="flex items-center justify-center">
+            <Store className="size-8" />
+            <h1 className="ml-2 text-2xl font-bold">Team Hex Shop</h1>
+          </div>
         </Link>
         <p className="text-sm text-muted-foreground">
           Quality products, delivered across Japan.

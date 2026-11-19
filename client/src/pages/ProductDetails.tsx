@@ -6,6 +6,7 @@ import axios, { isAxiosError } from "@/helpers/axios"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/useCart"
 import type { Product } from "@/components/ProductCard"
+import { flyToCart } from "@/helpers/flyToCart"
 
 type ProductDetail = Product & { category?: { id: number; name: string } }
 
@@ -70,14 +71,16 @@ const ProductDetails = () => {
     (img) => `${import.meta.env.VITE_BACKEND_URL}/${img.urlPath}`
   )
 
-  const handleAdd = () =>
-    addToCart({
+  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const added = addToCart({
       id: product.id,
       name: product.name,
       price: finalPrice,
       image: imageUrls[0],
       stock: product.stock,
     })
+    if (added) flyToCart(e.currentTarget, imageUrls[0])
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-4 pb-28 lg:px-6 lg:pb-10">

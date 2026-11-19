@@ -2,6 +2,7 @@ import { ImageOff, ShoppingCart } from "lucide-react"
 import { Link } from "react-router"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/useCart"
+import { flyToCart } from "@/helpers/flyToCart"
 
 export type Product = {
   id: number
@@ -108,15 +109,16 @@ const ProductCard = ({ product }: { product: Product }) => {
         <Button
           className="relative z-10 mt-auto w-full cursor-pointer"
           disabled={outOfStock}
-          onClick={() =>
-            addToCart({
+          onClick={(e) => {
+            const added = addToCart({
               id: product.id,
               name: product.name,
               price: finalPrice,
               image: imageUrl ?? undefined,
               stock: product.stock,
             })
-          }
+            if (added) flyToCart(e.currentTarget, imageUrl ?? undefined)
+          }}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
           {outOfStock ? "Unavailable" : "Add to cart"}
