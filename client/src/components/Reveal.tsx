@@ -6,7 +6,7 @@ type RevealProps = {
   delay?: number
 }
 
-export default function Reveal({ children, delay = 0.1 }: RevealProps) {
+export default function Reveal({ children, delay = 0 }: RevealProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -15,7 +15,7 @@ export default function Reveal({ children, delay = 0.1 }: RevealProps) {
       transition={{
         duration: 1,
         delay,
-        ease: "easeOut",
+        ease: "easeInOut",
       }}
     >
       {children}

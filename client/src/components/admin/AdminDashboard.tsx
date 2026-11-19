@@ -11,15 +11,15 @@ import {
 import NewOrders from "./tabs/NewOrders"
 import Customers from "./tabs/Customers"
 import SentOrders from "./tabs/SentOrders"
-import CreateProduct from "./tabs/CreateProduct"
+import Products from "./tabs/Products"
 
-type Tab = "orders" | "customers" | "history" | "createNewProduct"
+type Tab = "orders" | "customers" | "history" | "products"
 
 const TABS = [
   { key: "orders", label: "New Orders", icon: Package },
   { key: "customers", label: "Customers", icon: Users },
   { key: "history", label: "Sent Orders", icon: History },
-  { key: "createNewProduct", label: "Create New Product", icon: PackagePlus },
+  { key: "products", label: "Products", icon: PackagePlus },
 ] as const
 
 const renderTab = (tab: Tab): ReactNode => {
@@ -30,8 +30,8 @@ const renderTab = (tab: Tab): ReactNode => {
       return <Customers />
     case "history":
       return <SentOrders />
-    case "createNewProduct":
-      return <CreateProduct />
+    case "products":
+      return <Products />
   }
 }
 

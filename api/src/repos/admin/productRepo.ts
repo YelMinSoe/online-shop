@@ -1,3 +1,4 @@
+import { Prisma } from "../../../generated/prisma/client.ts";
 import { prisma } from "../../lib/prisma.ts";
 import { errorResponse } from "../../utils/errorResponse.ts";
 
@@ -35,7 +36,17 @@ export const findProductById = async (id: number) => {
 };
 // Delete product
 export const removeProduct = async (id: number) => {
-  return await prisma.product.delete({ where: { id } });
+  const used = await prisma.productOnOrder.count({ where: { productId: id } });
+
+  if (used > 0) {
+    // if in order list hide it
+    await prisma.product.update({ where: { id }, data: { isActive: false } });
+    return { hidden: true };
+  }
+
+  // if don't have in order list , delete it
+  await prisma.product.delete({ where: { id } });
+  return { hidden: false };
 };
 
 // Edit product

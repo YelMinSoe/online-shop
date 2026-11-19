@@ -97,9 +97,16 @@ export const productController = {
   deletCategory: [
     productValidator.deleteCategory,
     async (req: Request, res: Response, next: NextFunction) => {
-      const { id } = req.params;
-      await procuctService.deleteCategory(Number(id));
-      res.status(200).json({ message: "Deleted category successfully" });
+      const { product, hidden } = await procuctService.deleteProduct(
+        Number(req.params.id),
+      );
+
+      res.status(200).json({
+        message: hidden
+          ? "Product is in existing orders, so it has been hidden instead of deleted"
+          : "Product deleted successfully",
+        product,
+      });
     },
   ],
 };

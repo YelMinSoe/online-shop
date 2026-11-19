@@ -6,7 +6,7 @@ export const findAllProducts = async (
   limit: number,
   categoryId?: number,
 ) => {
-  const where = categoryId ? { categoryId } : {};
+  const where = { isActive: true, ...(categoryId ? { categoryId } : {}) };
 
   const [products, total] = await Promise.all([
     prisma.product.findMany({

@@ -64,14 +64,14 @@ export const procuctService = {
     if (!product) {
       throw errorResponse(404, "Product not found");
     }
-
-    await removeProduct(id);
-
     // delete product's image
     const oldUrlPath = product.images[0]?.urlPath;
-    if (oldUrlPath) {
-      await deleteFile(oldUrlPath);
+
+    const { hidden } = await removeProduct(id);
+    if (!hidden && oldUrlPath) {
+      await deleteFile(oldUrlPath); // တကယ်ဖျက်တဲ့အခါမှ ပုံဖျက်
     }
+    return { product, hidden };
   },
   //   update product
   updateProduct: async (
