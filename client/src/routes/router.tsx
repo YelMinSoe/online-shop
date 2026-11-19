@@ -16,11 +16,14 @@ import ResetPassword from "@/pages/ResetPassword"
 import Cart from "@/pages/Cart"
 import ProductDetails from "@/pages/ProductDetails"
 import Profile from "@/pages/Profile"
+import NotFound from "@/pages/NotFound"
+import RouteError from "@/pages/RouteError"
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
+    ErrorBoundary: RouteError, // show this route when app crashed
     children: [
       { index: true, Component: Home },
       {
@@ -56,6 +59,7 @@ export const router = createBrowserRouter([
       },
       { path: "cart", Component: Cart },
       { path: "profile", Component: Profile },
+      { path: "*", Component: NotFound },
     ],
   },
 ])
