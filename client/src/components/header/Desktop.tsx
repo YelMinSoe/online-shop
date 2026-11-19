@@ -80,7 +80,7 @@ const Desktop = () => {
                 to="/profile"
                 className="flex max-w-50 items-center gap-2 rounded-md px-2 py-1 text-lg font-medium transition hover:bg-muted"
               >
-                <User className="h-4 w-4 shrink-0" />
+                <User className="size-5 shrink-0" />
                 <span className="truncate">{email}</span>
               </Link>
             </li>

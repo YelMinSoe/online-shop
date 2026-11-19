@@ -66,4 +66,39 @@ export const orderRepo = {
       },
     });
   },
+  // Cancel order
+  cancelOrderById: async (orderId: number, userId: number) => {
+    return await prisma.$transaction(async (tx) => {
+      // protect order from other user
+      const order = await tx.order.findFirst({
+        where: { id: orderId, userId },
+        include: { products: true },
+      });
+      if (!order) throw errorResponse(404, "Order not found");
+
+      // change to pending to cancelled
+      const result = await tx.order.updateMany({
+        where: { id: orderId, userId, status: "PENDING" },
+        data: { status: "CANCELLED" },
+      });
+      if (result.count === 0) {
+        throw errorResponse(
+          409,
+          order.status === "CANCELLED"
+            ? "This order is already cancelled"
+            : "This order has already been shipped and can no longer be cancelled",
+        );
+      }
+
+      // increase cancelled stocks
+      for (const line of order.products) {
+        await tx.product.update({
+          where: { id: line.productId },
+          data: { stock: { increment: line.quantity } },
+        });
+      }
+
+      return { ...order, status: "CANCELLED" as const };
+    });
+  },
 };

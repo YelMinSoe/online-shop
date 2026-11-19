@@ -113,5 +113,6 @@ enum Role {
 
 enum OrderStatus {
   PENDING
-  SENT
+  SHIPPED
+  CANCELLED
 }

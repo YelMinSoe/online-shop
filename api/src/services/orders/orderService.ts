@@ -63,4 +63,9 @@ export const orderService = {
     const orders = await orderRepo.findOrdersByUserId(userId);
     return { orders };
   },
+  // Cencel orders
+  cancelOrder: async (orderId: number, userId: number) => {
+    const order = await orderRepo.cancelOrderById(orderId, userId);
+    return { order };
+  },
 };

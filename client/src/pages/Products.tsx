@@ -22,7 +22,7 @@ const Products = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
 
-  // Category စာရင်း (တစ်ခါပဲ)
+  // fectch categories when product page is running
   useEffect(() => {
     axios
       .get("/api/categories/get-categories")
@@ -31,12 +31,11 @@ const Products = () => {
         setCategories(res.data.categories ?? [])
       })
       .catch(() => {
-        // filter မပေါ်ရုံပဲ၊ product စာရင်းကို မထိခိုက်
-        console.log("Error is found here")
+        return // if categories are empty array
       })
   }, [])
 
-  // Product စာရင်း (page သို့ category ပြောင်းတိုင်း)
+  // Product lists
   useEffect(() => {
     let ignore = false
 
@@ -67,7 +66,7 @@ const Products = () => {
     }
   }, [page, categoryId])
 
-  // URL မှာ page က နောက်ဆုံးထက်ကျော်နေရင် ပြန်ပို့
+  // if invalid page or empty go to all
   useEffect(() => {
     if (!loading && page > totalPages) {
       // eslint-disable-next-line react-hooks/immutability

@@ -36,8 +36,20 @@ export const orderController = {
       }
     },
   ],
+  // get user order
   getMyOrders: async (req: CustomRequest, res: Response) => {
     const { orders } = await orderService.getMyOrders(req.userId!);
     res.status(200).json({ orders });
   },
+  //Cancel order
+  cancelOrder: [
+    orderValidator.cancelOrder,
+    async (req: CustomRequest, res: Response) => {
+      const errors = validationResult(req).array({ onlyFirstError: true });
+      if (errors.length > 0) errorResponse(400, errors[0].msg);
+
+      await orderService.cancelOrder(Number(req.params.id), req.userId!);
+      res.status(200).json({ message: "Order cancelled successfully" });
+    },
+  ],
 };

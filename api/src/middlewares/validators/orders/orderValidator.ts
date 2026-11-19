@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 export const orderValidator = {
   createOrder: [
@@ -16,5 +16,8 @@ export const orderValidator = {
     body("items.*.quantity", "Invalid quantity")
       .isInt({ min: 1, max: 100 })
       .toInt(),
+  ],
+  cancelOrder: [
+    param("id", "Invalid order id").isInt({ min: 1, max: 2147483647 }).toInt(),
   ],
 };

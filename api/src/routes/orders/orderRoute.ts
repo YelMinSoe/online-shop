@@ -10,4 +10,5 @@ router.post(
   ...orderController.createOrder,
 );
 router.get("/get-my-orders", orderController.getMyOrders);
+router.patch("/cancel-order/:id", ...orderController.cancelOrder);
 export default router;
