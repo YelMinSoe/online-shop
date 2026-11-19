@@ -4,7 +4,7 @@ import { Store } from "lucide-react"
 const LINKS = [
   { to: "/", label: "Home" },
   { to: "/products", label: "Products" },
-  { to: "/about", label: "About" },
+  { to: "/about", label: "About us" },
   { to: "/cart", label: "Cart" },
 ]
 

@@ -68,7 +68,7 @@ const Desktop = () => {
             `relative pb-1 after:absolute after:bottom-0 after:left-0 after:h-0.75 after:w-full after:origin-center after:rounded-full after:bg-red-400 after:transition-transform after:duration-300 ${isActive ? "after:scale-x-100" : "after:scale-x-0 hover:after:scale-x-100"}`
           }
         >
-          About
+          About us
         </NavLink>
       </ul>
       {/* User Controls */}
