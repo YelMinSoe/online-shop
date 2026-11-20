@@ -24,6 +24,11 @@ export const orderValidator = {
     query("status", "Invalid status").isIn(["PENDING", "SHIPPED"]),
     query("page").optional().isInt({ min: 1, max: 100000 }).toInt(),
     query("limit").optional().isInt({ min: 1, max: 50 }).toInt(),
+    query("search")
+      .optional()
+      .customSanitizer((v) => String(v).replace("#", "").trim()) // "#AB12" လို့ ရိုက်လည်း ရအောင်
+      .isLength({ max: 7 })
+      .withMessage("Invalid search"),
   ],
   orderId: [
     param("id", "Invalid order id").isInt({ min: 1, max: 2147483647 }).toInt(),

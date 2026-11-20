@@ -44,15 +44,40 @@ const STATUS: Record<Status, { label: string; className: string }> = {
   },
 }
 
+// Sub-tab ၃ ခု
+const FILTERS: { key: Status; label: string }[] = [
+  { key: "PENDING", label: "Pending" },
+  { key: "SHIPPED", label: "Shipped" },
+  { key: "CANCELLED", label: "Cancelled" },
+]
+
+const EMPTY_TEXT: Record<Status, string> = {
+  PENDING: "No pending orders",
+  SHIPPED: "No shipped orders yet",
+  CANCELLED: "No cancelled orders",
+}
+
 const POLL_MS = 15000
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<Status>("PENDING")
   const [target, setTarget] = useState<Order | null>(null) // cancel လုပ်မယ့် order
   const [cancelling, setCancelling] = useState(false)
 
-  // if silent is true , don't show spinner and  toast.error
+  // Status တစ်ခုချင်းရဲ့ အရေအတွက် (badge အတွက်)
+  const counts = orders.reduce<Record<Status, number>>(
+    (acc, o) => {
+      if (o.status in acc) acc[o.status]++
+      return acc
+    },
+    { PENDING: 0, SHIPPED: 0, CANCELLED: 0 }
+  )
+
+  const visibleOrders = orders.filter((o) => o.status === filter)
+
+  // silent = true ဆိုရင် spinner၊ error toast မပြ
   const fetchOrders = useCallback(async (silent: boolean) => {
     try {
       const res = await axios.get("/api/auth/orders/get-my-orders")
@@ -69,7 +94,7 @@ const OrderHistory = () => {
     }
   }, [])
 
-  // refect very 15 seconds
+  // ၁၅ စက္ကန့်တစ်ခါ refetch
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders(false)
@@ -98,13 +123,14 @@ const OrderHistory = () => {
       )
       toast.success("Order cancelled")
       setTarget(null)
+      setFilter("CANCELLED") // Cancel လုပ်ပြီးရင် Cancelled tab ကို ကူးပြ
     } catch (error) {
       toast.error(
         isAxiosError(error)
           ? (error.response?.data?.message ?? "Failed to cancel order")
           : "An unexpected error occurred"
       )
-      // if got 409, get back new status
+      // 409 ဆိုရင် status အသစ်ကို ပြန်ယူ
       setTarget(null)
       fetchOrders(true)
     } finally {
@@ -120,6 +146,7 @@ const OrderHistory = () => {
     )
   }
 
+  // Order လုံးဝမရှိမှ ဒီစာမျက်နှာ
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
@@ -134,87 +161,134 @@ const OrderHistory = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        {orders.map((order) => {
-          const status = STATUS[order.status]
-          const cancelled = order.status === "CANCELLED"
-
+      {/* Sub-tabs */}
+      <div
+        className="mb-4 flex [scrollbar-width:none] gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+        role="group"
+        aria-label="Filter orders by status"
+      >
+        {FILTERS.map(({ key, label }) => {
+          const active = filter === key
           return (
-            <div
-              key={order.id}
-              className="overflow-hidden rounded-xl border bg-card shadow-sm"
+            <button
+              key={key}
+              type="button"
+              onClick={() => setFilter(key)}
+              aria-pressed={active}
+              className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium whitespace-nowrap transition ${
+                active
+                  ? "border-purple-600 bg-purple-600 text-white"
+                  : "bg-card hover:border-purple-400 hover:text-purple-600"
+              }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold">#{order.code}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(order.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${status.className}`}
-                >
-                  {status.label}
-                </span>
-              </div>
-
-              <ul className={`divide-y px-4 ${cancelled ? "opacity-60" : ""}`}>
-                {order.products.map((line) => (
-                  <li
-                    key={line.id}
-                    className="flex items-center justify-between gap-3 py-3 text-sm"
-                  >
-                    <div className="min-w-0">
-                      <Link
-                        to={`/products/${line.product.id}`}
-                        className="line-clamp-1 font-medium hover:underline"
-                      >
-                        {line.product.name}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        {Number(line.price).toLocaleString()} MMK ×{" "}
-                        {line.quantity}
-                      </p>
-                    </div>
-                    <p className="shrink-0 font-medium">
-                      {(Number(line.price) * line.quantity).toLocaleString()}{" "}
-                      MMK
-                    </p>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
-                <div>
-                  <span className="text-sm text-muted-foreground">Total </span>
-                  <span
-                    className={`text-lg font-bold ${
-                      cancelled
-                        ? "text-muted-foreground line-through"
-                        : "text-green-600"
-                    }`}
-                  >
-                    {Number(order.totalPrice).toLocaleString()} MMK
-                  </span>
-                </div>
-
-                {/* Don't show button after shipped (just only in pending step) */}
-                {order.status === "PENDING" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTarget(order)}
-                    className="cursor-pointer border-red-300 text-red-600 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
-                  >
-                    <XCircle className="mr-1 h-4 w-4" />
-                    Cancel order
-                  </Button>
-                )}
-              </div>
-            </div>
+              {label}
+              <span
+                className={`rounded-full px-2 text-xs ${
+                  active ? "bg-white/20" : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {counts[key]}
+              </span>
+            </button>
           )
         })}
       </div>
+
+      {visibleOrders.length === 0 ? (
+        <p className="py-12 text-center text-muted-foreground">
+          {EMPTY_TEXT[filter]}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {visibleOrders.map((order) => {
+            // မသိတဲ့ status လာရင်လည်း crash မဖြစ်အောင်
+            const status = STATUS[order.status] ?? {
+              label: order.status,
+              className: "bg-muted text-muted-foreground",
+            }
+            const cancelled = order.status === "CANCELLED"
+
+            return (
+              <div
+                key={order.id}
+                className="overflow-hidden rounded-xl border bg-card shadow-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold">#{order.code}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(order.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${status.className}`}
+                  >
+                    {status.label}
+                  </span>
+                </div>
+
+                <ul
+                  className={`divide-y px-4 ${cancelled ? "opacity-60" : ""}`}
+                >
+                  {order.products.map((line) => (
+                    <li
+                      key={line.id}
+                      className="flex items-center justify-between gap-3 py-3 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <Link
+                          to={`/products/${line.product.id}`}
+                          className="line-clamp-1 font-medium hover:underline"
+                        >
+                          {line.product.name}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">
+                          {Number(line.price).toLocaleString()} MMK ×{" "}
+                          {line.quantity}
+                        </p>
+                      </div>
+                      <p className="shrink-0 font-medium">
+                        {(Number(line.price) * line.quantity).toLocaleString()}{" "}
+                        MMK
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+                  <div>
+                    <span className="text-sm text-muted-foreground">
+                      Total{" "}
+                    </span>
+                    <span
+                      className={`text-lg font-bold ${
+                        cancelled
+                          ? "text-muted-foreground line-through"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {Number(order.totalPrice).toLocaleString()} MMK
+                    </span>
+                  </div>
+
+                  {/* Pending မှာပဲ Cancel ခလုတ်ပြ */}
+                  {order.status === "PENDING" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTarget(order)}
+                      className="cursor-pointer border-red-300 text-red-600 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
+                    >
+                      <XCircle className="mr-1 h-4 w-4" />
+                      Cancel order
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Confirm dialog */}
       <Dialog

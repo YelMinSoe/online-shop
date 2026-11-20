@@ -6,8 +6,14 @@ export const adminOrderRepo = {
     status: "PENDING" | "SHIPPED",
     page: number,
     limit: number,
+    search?: string,
   ) => {
-    const where = { status };
+    const where = {
+      status,
+      ...(search
+        ? { code: { contains: search, mode: "insensitive" as const } }
+        : {}),
+    };
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where,

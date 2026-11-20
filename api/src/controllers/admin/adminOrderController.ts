@@ -16,6 +16,7 @@ export const adminOrderController = {
         req.query.status as "PENDING" | "SHIPPED",
         Number(req.query.page) || 1,
         Number(req.query.limit) || 10,
+        req.query.search ? String(req.query.search) : undefined,
       );
       res.status(200).json(result);
     },

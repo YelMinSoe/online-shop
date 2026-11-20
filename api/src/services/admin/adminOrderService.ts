@@ -8,11 +8,13 @@ export const adminOrderService = {
     status: "PENDING" | "SHIPPED",
     page: number,
     limit: number,
+    search?: string,
   ) => {
     const { orders, total } = await adminOrderRepo.findOrdersByStatus(
       status,
       page,
       limit,
+      search,
     );
     return {
       orders: orders.map(({ paymentSlip, ...o }) => ({

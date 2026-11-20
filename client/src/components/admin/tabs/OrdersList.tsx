@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useState } from "react"
-import { Loader2, Package, RefreshCw, Receipt, Send } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import {
+  Loader2,
+  Package,
+  RefreshCw,
+  Receipt,
+  Search,
+  Send,
+  X,
+} from "lucide-react"
 import { toast } from "react-toastify"
 import axios, { isAxiosError } from "@/helpers/axios"
 import { Button } from "@/components/ui/button"
@@ -53,32 +61,54 @@ const OrdersList = ({ status }: Props) => {
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
 
+  // Search
+  const [searchInput, setSearchInput] = useState("") // input ထဲမှာ ရိုက်နေတာ
+  const [query, setQuery] = useState("") // API ကို တကယ်ပို့မယ့်တန်ဖိုး
+  const requestId = useRef(0) // response အဟောင်းက အသစ်ကို မဖြတ်ရေးအောင်
+
   const [slipSrc, setSlipSrc] = useState<string | null>(null)
   const [slipLoading, setSlipLoading] = useState<number | null>(null)
 
   const [target, setTarget] = useState<AdminOrder | null>(null)
   const [sending, setSending] = useState(false)
 
+  // ရိုက်ပြီး ၄၀၀ms ရပ်မှ ရှာ၊ ရှာတိုင်း page ကို 1 ပြန်ထား
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery(searchInput.replace("#", "").trim())
+      setPage(1)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
   const fetchOrders = useCallback(
     async (p: number) => {
+      const id = ++requestId.current
       setLoading(true)
       try {
         const res = await axios.get(LIST_URL, {
-          params: { status, page: p, limit: LIMIT },
+          params: {
+            status,
+            page: p,
+            limit: LIMIT,
+            search: query || undefined,
+          },
         })
+        if (id !== requestId.current) return // နောက်ထပ် request ရှိနေပြီ
         setOrders(res.data.orders)
         setTotalPages(res.data.totalPages)
       } catch (error) {
+        if (id !== requestId.current) return
         toast.error(
           isAxiosError(error)
             ? (error.response?.data?.message ?? "Failed to load orders")
             : "An unexpected error occurred"
         )
       } finally {
-        setLoading(false)
+        if (id === requestId.current) setLoading(false)
       }
     },
-    [status]
+    [status, query]
   )
 
   useEffect(() => {
@@ -128,12 +158,29 @@ const OrdersList = ({ status }: Props) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {isPending
-            ? "Check the payment slip, then ship the order."
-            : "Orders that have already been shipped."}
-        </p>
+      {/* Search + Refresh */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by order code..."
+            maxLength={8}
+            className="w-full rounded-md border border-gray-300 py-2 pr-9 pl-9 uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput("")}
+              aria-label="Clear search"
+              className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer rounded p-1 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         <Button
           variant="outline"
           size="sm"
@@ -148,6 +195,12 @@ const OrdersList = ({ status }: Props) => {
         </Button>
       </div>
 
+      <p className="text-sm text-muted-foreground">
+        {isPending
+          ? "Check the payment slip, then ship the order."
+          : "Orders that have already been shipped."}
+      </p>
+
       {loading && orders.length === 0 ? (
         <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" /> Loading orders...
@@ -155,7 +208,11 @@ const OrdersList = ({ status }: Props) => {
       ) : orders.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground">
           <Package className="h-10 w-10" />
-          {isPending ? "No new orders" : "No shipped orders yet"}
+          {query
+            ? `No orders found for "${query.toUpperCase()}"`
+            : isPending
+              ? "No new orders"
+              : "No shipped orders yet"}
         </div>
       ) : (
         <div
