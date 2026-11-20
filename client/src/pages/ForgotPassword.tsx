@@ -28,7 +28,6 @@ const ForgotPassword = () => {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
       const response = await axios.post("/api/auth/forget-password", data)
-      console.log(response.data.otp)
       toast.success(response.data.message)
       reset()
       sessionStorage.setItem("registeredEmail", data.email)

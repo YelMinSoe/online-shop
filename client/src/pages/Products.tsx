@@ -27,7 +27,6 @@ const Products = () => {
     axios
       .get("/api/categories/get-categories")
       .then((res) => {
-        console.log(res.data)
         setCategories(res.data.categories ?? [])
       })
       .catch(() => {

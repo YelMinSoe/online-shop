@@ -34,7 +34,7 @@ app
   )
   .use(express.urlencoded({ extended: true }))
   .use(express.json())
-  .use(cors({ origin: "http://localhost:5173", credentials: true }))
+  .use(cors({ origin: process.env.CLIENT_URL, credentials: true }))
   .use(cookieParser())
   .use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 

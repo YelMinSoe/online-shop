@@ -63,7 +63,7 @@ export const authServices = {
     }
 
     // Sending Email is here
-    // await sendEmail({ to: email, viewFileName: "email", otp });
+    await sendEmail({ to: email, viewFileName: "email", otp });
 
     // Return values are here but in production, we will not return otp for security.
     return { otp };
@@ -163,13 +163,12 @@ export const authServices = {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user
-    console.log("Error found here");
+
     const newUser = await createUser({
       email,
       password: hashedPassword,
       refreshToken: tokenGenerator(),
     });
-    console.log("Error done here");
 
     // JWT tokens
     const access = createAccessToken(newUser.id);
@@ -244,7 +243,6 @@ export const authServices = {
       errorResponse(400, "You are not unauthenticated user");
     }
     // Verify refresh token
-    console.log("Error found here 2");
 
     let decoded;
     try {
@@ -256,7 +254,6 @@ export const authServices = {
       errorResponse(400, "You are not unauthenticated user");
     }
     // Check id is number or not {this is option for security}
-    console.log("Error found here 3");
 
     if (isNaN(decoded!.id)) {
       errorResponse(400, "You are not unauthenticated user");
@@ -312,7 +309,7 @@ export const authServices = {
     await updateOtp(otpRow!.id, { otp: hashOtp, errorCount: 0 });
 
     // Sending Email is here
-    // await sendEmail({ to: email, viewFileName: "email", otp });
+    await sendEmail({ to: email, viewFileName: "email", otp });
 
     // Return values are here but in production, we will not return otp for security.
     return { otp };

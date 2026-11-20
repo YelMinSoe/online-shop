@@ -29,7 +29,7 @@ const Register = () => {
     const requestOtp = async () => {
       try {
         const response = await axios.post("/api/auth/register", data)
-        console.log(response.data.otp)
+
         toast.success(response.data.message)
         reset()
         sessionStorage.setItem("registeredEmail", data.email)
