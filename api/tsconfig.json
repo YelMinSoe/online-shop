@@ -6,7 +6,7 @@
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
     "noEmit": false,
     "strict": true,
