@@ -12,10 +12,10 @@ const Home = () => {
           <img
             src={homeImage}
             alt="Home"
-            className="mb-8 h-full w-full animate-fade-in-right object-contain lg:order-last lg:mr-4 lg:h-150 lg:w-150"
+            className="mb-8 h-full w-full animate-fade-in-right object-contain lg:order-last lg:mr-4 lg:mb-28 lg:h-150 lg:w-150"
           />
           <div className="">
-            <h1 className="text-xl font-bold lg:text-3xl">
+            <h1 className="mt-4 text-xl font-bold lg:text-3xl">
               Welcome to Team Hex Shop
             </h1>
             <p className="mt-2 text-sm text-muted-foreground lg:text-xl">
