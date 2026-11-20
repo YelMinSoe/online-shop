@@ -16,7 +16,7 @@ export const findAllProducts = async (
       skip: (page - 1) * limit,
       take: limit,
     }),
-    prisma.product.count({ where }), // total ကိုလည်း filter နဲ့ တူအောင်
+    prisma.product.count({ where }),
   ]);
   return { products, total };
 };

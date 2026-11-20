@@ -1,7 +1,3 @@
-import React from "react"
-
-const sentOrders = () => {
-  return <div>sentOrders</div>
-}
-
-export default sentOrders
+import OrdersList from "./OrdersList"
+const SentOrders = () => <OrdersList status="SHIPPED" />
+export default SentOrders

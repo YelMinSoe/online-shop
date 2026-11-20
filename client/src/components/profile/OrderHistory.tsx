@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-type Status = "PENDING" | "SENT" | "CANCELLED"
+type Status = "PENDING" | "SHIPPED" | "CANCELLED"
 
 type Order = {
   id: number
@@ -34,7 +34,7 @@ const STATUS: Record<Status, { label: string; className: string }> = {
     label: "Pending",
     className: "bg-orange-50 text-orange-600 dark:bg-orange-950",
   },
-  SENT: {
+  SHIPPED: {
     label: "Shipped",
     className: "bg-green-50 text-green-600 dark:bg-green-950",
   },
