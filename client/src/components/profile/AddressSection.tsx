@@ -80,12 +80,13 @@ const AddressSection = () => {
 
   const onSave = async (data: FormData) => {
     try {
-      await axios.put("/api/auth/address/modify-address", data)
+      await axios.patch("/api/auth/address/modify-address", data)
       setSaved(data)
       reset(data)
       setEditing(false)
       toast.success("Address saved")
     } catch (error) {
+      console.log("Error found in this section")
       toast.error(
         isAxiosError(error)
           ? (error.response?.data?.message ?? "Failed to save address")
@@ -201,7 +202,7 @@ const AddressSection = () => {
             disabled={isSubmitting}
             className="flex-1 cursor-pointer"
             onClick={() => {
-              reset(saved) // မသိမ်းဘဲ ပယ်
+              reset(saved) // reject it
               setEditing(false)
             }}
           >
