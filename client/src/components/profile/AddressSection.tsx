@@ -67,7 +67,7 @@ const AddressSection = () => {
           setSaved(value)
           reset(value)
         } else {
-          setEditing(true) // address မရှိသေးရင် form ကို တန်းပြ
+          setEditing(true) // if address is not existing , show form
         }
       } catch {
         setEditing(true)
@@ -80,7 +80,7 @@ const AddressSection = () => {
 
   const onSave = async (data: FormData) => {
     try {
-      await axios.put("/api/auth/address/save-address", data)
+      await axios.put("/api/auth/address/modify-address", data)
       setSaved(data)
       reset(data)
       setEditing(false)
